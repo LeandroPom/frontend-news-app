@@ -17,7 +17,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Publicaciones más vistas</h1>
+      <h1>Publicaciones más vistas SAPE</h1>
       <ul>
         {allPosts.map(post => (
           <li key={post.id}>

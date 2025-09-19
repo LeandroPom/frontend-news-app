@@ -1,11 +1,13 @@
 module.exports = {
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-  darkMode: false, // or 'media' or 'class'
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}", // o donde estén tus archivos React
+  ],
   theme: {
-    extend: {},
-  },
-  variants: {
-    extend: {},
+    extend: {
+      colors: {
+        customBlue: 'rgba(24, 72, 134, 0.35)',
+      },
+    },
   },
   plugins: [],
 }

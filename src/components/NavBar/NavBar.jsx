@@ -1,20 +1,34 @@
 // Navbar.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
-  function Navbar() {
+function Navbar() {
   return (
-    <nav className="bg-gray-900 text-white shadow-md">
+    <nav
+      className="text-white shadow-md backdrop-blur-md"
+      style={{
+        backgroundColor: "rgba(18, 51, 95, 0.6)", // color #12335F con 60% de opacidad
+        borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           
           {/* Título */}
           <div className="flex-shrink-0">
-            <h1 className="text-xl font-bold">Portal de noticias</h1>
+            <h1 className="text-xl font-bold">Palabra Argentina</h1>
           </div>
 
           {/* Links */}
           <div className="hidden md:flex space-x-6">
-            <a href="#" className="hover:text-red-500 transition-colors">Acceder</a>
+             <Link
+              to="/login"
+              className="hover:text-red-500 transition-colors"
+            >
+              Acceder
+            </Link>
             <a href="#" className="hover:text-red-500 transition-colors">Noticias recientes</a>
             <a href="#" className="hover:text-red-500 transition-colors">Información</a>
             <a href="#" className="hover:text-red-500 transition-colors">Noticias locales</a>
@@ -24,7 +38,6 @@ import React from "react";
 
           {/* Botón móvil (hamburguesa) */}
           <div className="md:hidden">
-            {/* Aquí podrías agregar un botón de menú para mobile si querés */}
             <button className="focus:outline-none">
               <svg
                 className="h-6 w-6"

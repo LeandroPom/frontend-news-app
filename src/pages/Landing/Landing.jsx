@@ -1,28 +1,27 @@
-// Landing.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-  function Landing() {
+function Landing() {
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white">
-      <div className="text-center p-8 bg-white/10 backdrop-blur-md rounded-xl shadow-xl">
-        {/* Título */}
-        <h1 className="text-5xl font-extrabold mb-6">
-          Portal de Noticias
-        </h1>
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white space-y-12">
+      
+      {/* Título con animación de gradiente */}
+      <h1
+        className="text-6xl font-extrabold 
+                   bg-gradient-to-r from-red-700 via-red-400 to-red-700 
+                   bg-[length:200%_200%] bg-clip-text text-transparent
+                   drop-shadow-[2px_2px_8px_rgba(0,0,0,0.8)]
+                   animate-shine"
+      >
+        Palabra Argentina
+      </h1>
 
-        {/* Subtítulo */}
-        <p className="text-lg mb-8 text-gray-200">
-          Mantente informado con las últimas noticias locales, nacionales e internacionales
-        </p>
-
-        {/* Botón Enter */}
-        <Link to="/home">
-          <button className="px-8 py-3 bg-red-600 hover:bg-red-500 transition-colors rounded-lg text-white font-semibold text-lg shadow-lg">
-            Enter
-          </button>
-        </Link>
-      </div>
+      {/* Botón Enter */}
+      <Link to="/home">
+        <button className="px-8 py-3 bg-red-600 hover:bg-red-500 transition-colors rounded-lg text-white font-semibold text-lg shadow-lg">
+          Enter
+        </button>
+      </Link>
     </div>
   );
 }

@@ -1,177 +1,171 @@
-import React, { useEffect, useState } from 'react';
-import Navbar from '../../components/NavBar/NavBar';
-import { useNavigate } from "react-router-dom";
-import { 
-  FaNewspaper, FaGlobe, FaMapMarkerAlt, 
-  FaChevronLeft, FaChevronRight, 
-  FaThumbsUp, FaHeart 
-} from 'react-icons/fa';
-import Carousel from "../../pages/Carrousel/Carrousel";
+// Home.jsx
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import Navbar from "../../components/NavBar/NavBar";
+import Sidebar from "../../pages/Home/Sidebar";
+import axios from "axios";
+// Al inicio del archivo
+import SidebarPublicidad from "../../pages/Home/SidebarPublicidad"; // Ajustá la ruta según tu estructura
 
-const carouselItems = [
-  "https://img.odcdn.com.br/wp-content/uploads/2025/01/nissan-1920x1080.jpg",
-];
 
-const mockPosts = [
-  {
-    id: 1,
-    title: "Deportes",
-    views: 1200,
-    summary: "River Plate cae ante Palmeiras en la Copa Libertadores clickea en ver mas",
-    content: "En la ida de los cuartos de final de la Copa Libertadores, River Plate perdió 2-1 contra Palmeiras en el Monumental. El equipo argentino buscará revertir el resultado en Brasil el próximo miércoles para avanzar a las semifinales"
-  },
-  {
-    id: 2,
-    title: "Deportes",
-    views: 980,
-    summary: "Argentina avanza a octavos en el Mundial de Vóley tras vencer a Francia clickea en ver mas.",
-    content: "La selección argentina de vóley, dirigida por Marcelo Méndez, derrotó a Francia en un partido agónico que se resolvió en el quinto set. Con esta victoria, el equipo nacional se clasificó a los octavos de final del Mundial de Vóley 2025"
-  },
-  {
-    id: 3,
-    title: "Politica",
-    views: 450,
-    summary: "Encuesta revela aumento en la desaprobación de Javier Milei clickea en ver mas.",
-    content: "Una encuesta de AtlasIntel indica que la desaprobación del presidente argentino Javier Milei alcanzó un récord en septiembre, marcando el tercer mes consecutivo de caída en su imagen pública. El índice de desaprobación subió al 52,3%"
-  },
-  {
-    id: 4,
-    title: "Politica",
-    views: 2100,
-    summary: "Diputados rechaza vetos a ley del Garrahan y fondos universitarios clickea en ver mas.",
-    content: "La Cámara de Diputados de Argentina rechazó por amplia mayoría los vetos del presidente Javier Milei a la ley del Hospital Garrahan y a los fondos destinados a universidades nacionales. La decisión fue celebrada por la comunidad educativa y generó tensiones dentro del oficialismo"
-  },
-];
-
-function Home() {
-  const [allPosts, setAllPosts] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedPosts, setExpandedPosts] = useState({});
-  const navigate = useNavigate();
+const Home = () => {
+  const [posts, setPosts] = useState([]);
+  const [cotizaciones, setCotizaciones] = useState({
+    oficial: "---",
+    blue: "---",
+    mayorista: "---",
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAllPosts(mockPosts);
-    }, 500);
-    return () => clearTimeout(timer);
+    const fetchPosts = async () => {
+      try {
+        const res = await axios.get("/posts"); // tu backend
+        setPosts(res.data);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    };
+
+    const fetchDolar = async () => {
+      try {
+        const res = await axios.get("https://api.argentinadatos.com/v1/cotizaciones/dolares/");
+        const data = res.data;
+
+        // Tomamos el último valor por cada tipo
+        const ultimoOficial = [...data].reverse().find(d => d.casa === "oficial");
+        const ultimoBlue = [...data].reverse().find(d => d.casa === "blue");
+        const ultimoMayorista = [...data].reverse().find(d => d.casa === "mayorista");
+
+        setCotizaciones({
+          oficial: ultimoOficial?.venta || "---",
+          blue: ultimoBlue?.venta || "---",
+          mayorista: ultimoMayorista?.venta || "---",
+        });
+      } catch (error) {
+        console.error("Error fetching dolar:", error);
+      }
+    };
+
+    fetchPosts();
+    fetchDolar();
   }, []);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const mainPost = posts[0];
+  const secondaryPosts = posts.slice(1, 3);
+  const otherPosts = posts.slice(3);
 
-  const togglePost = (id) => {
-    setExpandedPosts(prev => ({ ...prev, [id]: !prev[id] }));
+  const getPostImage = (post) => {
+    return post.PostMedia?.length > 0
+      ? post.PostMedia[0].url
+      : "/placeholder.jpg";
   };
 
- return (
-  <div className="min-h-screen" style={{ backgroundColor: '#12335F' }}>
-    {/* Navbar */}
-    <Navbar />
+  const sanitizeHeadline = (html) => {
+    return html.replace(/<\/?h1[^>]*>/g, ""); // elimina <h1> y </h1>
+  };
 
-    {/* Carousel */}
-    <Carousel items={carouselItems} />
 
-    <div className="flex mt-4 flex-col md:flex-row">
-      {/* Sidebar */}
-      <div
-        className={`text-white shadow-md rounded-r-lg transition-all duration-300
-                    ${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative`}
-        style={{ backgroundColor: '#0C2342' }}
-      >
-        {/* Toggle button */}
-        <button
-          onClick={toggleSidebar}
-          className="flex items-center justify-center mt-4 ml-4 px-2 py-1 rounded-md shadow-md focus:outline-none"
-          style={{ backgroundColor: '#12335F', color: '#ffffff' }}
-        >
-          {sidebarOpen ? <FaChevronLeft className="mr-2" /> : <FaChevronRight className="mr-2" />}
-          <span className="text-sm font-medium">{sidebarOpen ? 'Ocultar' : ''}</span>
-        </button>
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
 
-        <ul className="mt-8 flex flex-col">
-          {[
-            { icon: <FaNewspaper />, label: 'Noticias recientes' },
-            { icon: <FaGlobe />, label: 'Generales' },
-            { icon: <FaMapMarkerAlt />, label: 'Actuales' },
-            { icon: <FaMapMarkerAlt />, label: 'Nacionales' },
-            { icon: <FaMapMarkerAlt />, label: 'Locales' },
-          ].map((item, idx) => (
-            <li
-              key={idx}
-              className="flex items-center px-4 py-3 cursor-pointer rounded-md transition-colors"
-              style={{ backgroundColor: 'transparent' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#0C2342'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              {item.icon}
-              {sidebarOpen && <span>{item.label}</span>}
-            </li>
-          ))}
-        </ul>
+      {/* Franja de cotizaciones */}
+      <div className="bg-gray-800 text-white py-2 px-4 flex justify-around text-sm">
+        <span>Dólar Oficial: {cotizaciones.oficial}</span>
+        <span>Dólar Blue: {cotizaciones.blue}</span>
+        <span>Dólar Mayorista: {cotizaciones.mayorista}</span>
       </div>
 
-      {/* Contenido principal */}
-      <div className="flex-1 px-4 md:px-6 py-8">
-        <h1 className="text-3xl font-bold text-white border-b-4 border-accent inline-block mb-8">
-          📰 Generales
-        </h1>
+      <div className="flex flex-col lg:flex-row max-w-7xl mx-auto mt-4 px-4 gap-4">
+        {/* Sidebar izquierdo */}
+        <div className="w-full lg:w-1/5">
+          <Sidebar />
+        </div>
 
-        <ul className="space-y-6">
-          {allPosts.map((post) => (
-            <li
-              key={post.id}
-              onClick={() => navigate('/post')}
-              className="cursor-pointer rounded-lg p-6 transition-shadow duration-300 shadow-md hover:shadow-xl"
-              style={{
-                backgroundColor: 'rgba(12, 35, 66, 0.4)', // efecto semi-transparente igual que navbar
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
-            >
-              <h2 className="text-2xl font-semibold text-white mb-2 hover:text-white/80">
-                {post.title}
-              </h2>
-              <p className="text-gray-300 mb-2">👁️ {post.views} vistas</p>
+        {/* Noticias centrales */}
+        <div className="flex-1 space-y-4">
+          {/* Noticia principal */}
+          {mainPost && (
+            <Link to={`/post/${mainPost.post_id}`} className="block relative w-full h-64 md:h-96 rounded overflow-hidden shadow-md">
+              <img
+                src={getPostImage(mainPost)}
+                alt={mainPost.headLine}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 bg-black bg-opacity-50 text-white p-4">
+                <h3
+                  className="font-semibold"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHeadline(mainPost.headLine) }}
+                ></h3>
+                <p
+                  className="text-sm md:text-base line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: mainPost.lead }}
+                />
+              </div>
+            </Link>
+          )}
 
-              {/* Resumen / contenido */}
-              <p className="text-white leading-relaxed mb-2">
-                {expandedPosts[post.id] ? post.content : post.summary}
-              </p>
-
-              {/* Botón ver más */}
-              <button
-                onClick={(e) => { e.stopPropagation(); togglePost(post.id); }}
-                className="flex items-center text-accent hover:text-accentLight font-medium focus:outline-none"
+          {/* Dos noticias secundarias */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {secondaryPosts.map((post) => (
+              <Link
+                key={post.post_id}
+                to={`/post/${post.post_id}`}
+                className="relative h-64 rounded overflow-hidden shadow-md block"
               >
-                {expandedPosts[post.id] ? 'Ver menos' : 'Ver más'}
-                <span className="ml-1">{expandedPosts[post.id] ? '▲' : '▼'}</span>
-              </button>
+                <img
+                  src={getPostImage(post)}
+                  alt={post.headLine}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 bg-black bg-opacity-50 text-white p-2">
+                  <h3
+                    className="font-semibold"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHeadline(post.headLine) }}
+                  ></h3>
 
-              {/* Like y Favoritos */}
-              <div className="flex items-center space-x-6 mt-4 text-gray-300">
-                <button className="flex items-center hover:text-primaryLight focus:outline-none">
-                  <FaThumbsUp className="mr-2" /> Me gusta
-                </button>
-                <button className="flex items-center hover:text-accent focus:outline-none">
-                  <FaHeart className="mr-2" /> Favoritos
-                </button>
-              </div>
+                  <p
+                    className="text-sm line-clamp-3"
+                    dangerouslySetInnerHTML={{ __html: post.lead }}
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
 
-              {/* 🔗 Link a noticia completa */}
-              <div className="mt-4">
-                <span className="text-sm text-secondary font-medium">
-                  🔗 Ver noticia completa
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
+          {/* Resto de las noticias */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {otherPosts.map((post) => (
+              <Link
+                key={post.post_id}
+                to={`/post/${post.post_id}`}
+                className="bg-white rounded shadow p-2 block"
+              >
+                <img
+                  src={getPostImage(post)}
+                  alt={post.headLine}
+                  className="w-full h-40 object-cover rounded"
+                />
+                <h3
+                  className="font-semibold"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHeadline(post.headLine) }}
+                ></h3>
+                <p
+                  className="text-sm line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: post.lead }}
+                />
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar derecho / publicidad */}
+        <div className="w-full lg:w-1/5">
+          <SidebarPublicidad />
+        </div>
       </div>
     </div>
-  </div>
-);
-
-
+  );
 };
 
 export default Home;

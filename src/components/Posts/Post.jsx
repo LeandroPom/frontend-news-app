@@ -1,63 +1,133 @@
-// Post.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/NavBar/NavBar";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import axios from "axios";
 
 function Post() {
-  // Por ahora está fijo en la noticia 1
-  const noticia = {
-    id: 1,
-    title: "River Plate cae ante Palmeiras en la Copa Libertadores",
-    date: "19 de Septiembre de 2025",
-    views: 1200,
-    image: "https://futbolete.com/wp-content/uploads/2025/09/donde-ver-river-plate-palmeiras-libertadores-tv-online.jpg",
-    content: `En la ida de los cuartos de final de la Copa Libertadores, 
-    River Plate perdió 2-1 contra Palmeiras en el Estadio Monumental. 
-    El equipo argentino no logró sostener la ventaja inicial y ahora 
-    deberá buscar revertir el resultado en Brasil el próximo miércoles 
-    para avanzar a las semifinales.`
-  };
+  const { id } = useParams(); // obtenemos el id del post
+  const [post, setPost] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get(`/posts/${id}`)
+      .then((res) => {
+        // Si viene un array con un solo elemento, tomalo; si viene objeto, usarlo directamente
+        const data = Array.isArray(res.data) ? res.data[0] : res.data;
+        setPost(data);
+      })
+      .catch((err) => console.error(err));
+  }, [id]);
+
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-black">
+        Cargando noticia...
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#12335F" }}>
-      {/* Navbar */}
+    <div className="min-h-screen bg-[#12335F]">
       <Navbar />
 
       <div
         className="max-w-3xl mx-auto mt-8 p-6 rounded-lg shadow-md"
         style={{
-          backgroundColor: "rgba(12, 35, 66, 0.4)", // efecto semitransparente tipo navbar
+          backgroundColor: "rgba(255, 255, 255, 0.94)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
+          border: "1px solid rgba(255, 255, 255, 0.38)",
         }}
       >
         {/* Título */}
-        <h1 className="text-3xl font-bold text-white mb-2">
-          {noticia.title}
-        </h1>
-
-        {/* Fecha y vistas */}
-        <p className="text-sm text-gray-300 mb-4">
-          📅 {noticia.date} • 👁️ {noticia.views} vistas
-        </p>
-
-        {/* Imagen */}
-        <img
-          src={noticia.image}
-          alt={noticia.title}
-          className="w-full h-64 object-cover rounded-lg mb-6"
+        <h1
+          className="text-3xl font-bold mb-2"
+          dangerouslySetInnerHTML={{ __html: post.headLine }}
         />
 
-        {/* Contenido */}
-        <p className="text-white leading-relaxed mb-6">
-          {noticia.content}
-        </p>
+        {/* Autor y fecha */}
+        <div className="flex items-center justify-between text-black text-sm mb-4">
+          <span>✍️ {post.User?.user_name}</span>
+          <span>
+            {new Date(post.createdAt).toLocaleDateString("es-AR", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
+        </div>
 
-        {/* Volver */}
+        {/* Vistas */}
+        <p className="text-sm text-gray-400 mb-4">👁️ {post.views} vistas</p>
+
+        {/* Lead */}
+        <div
+          dangerouslySetInnerHTML={{ __html: post.lead }}
+          className="text-black mb-4"
+        />
+
+        {/* Imagen destacada */}
+        {post.PostMedia && post.PostMedia.length > 0 && (
+          <img
+            src={post.PostMedia[0].url}
+            alt={post.headLine}
+            className="w-full max-h-96 object-cover rounded-lg mb-4"
+          />
+        )}
+
+
+        {/* Body */}
+        <div
+          dangerouslySetInnerHTML={{ __html: post.body }}
+          className="text-black mb-4"
+        />
+
+        {/* Conclusion */}
+        {post.conclusion && (
+          <div
+            dangerouslySetInnerHTML={{ __html: post.conclusion }}
+            className="text-black font-semibold mb-6"
+          />
+        )}
+
+        {/* Otros medios (excluyendo la primera imagen) */}
+        {post.PostMedia &&
+          post.PostMedia.length > 1 &&
+          post.PostMedia.slice(1).map((m, i) => (
+            <div key={i} className="mb-4">
+              {m.type === "image" ? (
+                <img
+                  src={m.url}
+                  alt={`media-${i + 1}`}
+                  className="w-full max-h-96 object-cover rounded-lg"
+                />
+              ) : (
+                <video controls className="w-full max-h-96 rounded-lg">
+                  <source src={m.url} type="video/mp4" />
+                </video>
+              )}
+            </div>
+          ))}
+
+        {/* Tags */}
+        {post.Tags && post.Tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {post.Tags.map((tag) => (
+              <Link
+                key={tag.tag_id}
+                to={`/busqueda?tag=${encodeURIComponent(tag.tag_name)}`}
+                className="bg-accent text-black text-sm px-2 py-1 rounded hover:bg-accentLight"
+              >
+                #{tag.tag_name}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Botón volver */}
         <Link
-          to="/Home"
-          className="inline-block text-accent hover:text-accentLight font-medium"
+          to="/home"
+          className="inline-block text-accent hover:text-accentLight font-medium mt-6"
         >
           ← Volver a las noticias
         </Link>

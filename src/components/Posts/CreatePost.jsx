@@ -1,108 +1,252 @@
-// CreatePost.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/NavBar/NavBar";
+import axios from "axios";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import mammoth from "mammoth";
 
-const CreatePost = () => {
-  const [headline, setHeadline] = useState("");
-  const [lead, setLead] = useState("");
-  const [body, setBody] = useState("");
-  const [conclusion, setConclusion] = useState("");
+function Post() {
+  const [tags, setTags] = useState([]);
+  const [newTag, setNewTag] = useState("");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [post, setPost] = useState({
+    headLine: "",
+    lead: "",
+    body: "",
+    conclusion: "",
+    media: [],
+  });
+  const [wordFile, setWordFile] = useState(null);
+  const user_id = 1; // reemplazar por usuario logueado
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
-    if (!headline || !lead || !body) {
-      alert("Por favor completa los campos obligatorios.");
-      return;
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],  // Encabezados
+      ["bold", "italic", "underline", "strike"], // Estilos básicos
+      [{ color: [] }, { background: [] }], // Colores de texto y fondo
+      [{ script: "sub" }, { script: "super" }], // Subíndice / superíndice
+      [{ list: "ordered" }, { list: "bullet" }], // Listas
+      [{ indent: "-1" }, { indent: "+1" }], // Sangría
+      [{ align: [] }], // Alineación
+      ["link", "image", "video"], // Multimedia
+      ["clean"], // Quitar formato
+    ],
+  };
+
+  const formats = [
+    "header",
+    "bold", "italic", "underline", "strike",
+    "color", "background",
+    "script",
+    "list", "bullet", "indent",
+    "align",
+    "link", "image", "video",
+  ];
+
+  // Función para traer los tags
+  const fetchTags = async () => {
+    try {
+      const { data } = await axios.get("http://localhost:3001/tags/");
+      const normalized = data.map((t) => ({
+        tag_id: t.tag_id || t.id,
+        tag_name: t.tag_name || t.name,
+      }));
+      setTags(normalized);
+    } catch (err) {
+      console.error("Error trayendo tags:", err);
     }
+  };
 
-    const newPost = { headline, lead, body, conclusion };
-    console.log("Nuevo post:", newPost);
+  useEffect(() => {
+    fetchTags();
+  }, []);
 
-    // Aquí harías tu POST al backend
-    // axios.post('/api/posts', newPost).then(...)
+  // Crear nuevo tag
+  const handleAddTag = async () => {
+    if (!newTag.trim()) return;
+    try {
+      await axios.post("http://localhost:3001/tags/", {
+        tag_name: newTag.trim(),
+      });
 
-    // Limpiar formulario
-    setHeadline("");
-    setLead("");
-    setBody("");
-    setConclusion("");
+      setNewTag("");
+      fetchTags(); // refrescar la lista de tags después de crear uno nuevo
+    } catch (err) {
+      console.error("Error creando tag:", err);
+      alert("Error creando tag");
+    }
+  };
+
+  // Selección de tags
+  const toggleTag = (tagId) => {
+    setSelectedTags((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
+
+  // Agregar media
+  const addMedia = (url, type) => {
+    setPost((prev) => ({ ...prev, media: [...prev.media, { url, type }] }));
+  };
+
+  // Crear post
+  const handleCreatePost = async () => {
+    try {
+      const payload = { ...post, tags: selectedTags, user_id };
+      console.log("Payload enviado al backend:", payload);
+
+      await axios.post("/posts", payload);
+      alert("Post creado con éxito");
+
+      setPost({ headLine: "", lead: "", body: "", conclusion: "", media: [] });
+      setSelectedTags([]);
+      setWordFile(null);
+    } catch (err) {
+      console.error("Error creando post:", err);
+      alert("Error creando post");
+    }
+  };
+
+  const handleWordUpload = async (file) => {
+    if (!file) return;
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const arrayBuffer = e.target.result;
+        const { value } = await mammoth.extractRawText({ arrayBuffer });
+        setPost((prev) => ({ ...prev, body: value }));
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (err) {
+      console.error("Error leyendo Word:", err);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#12335F] text-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#12335F" }}>
       <Navbar />
 
-      <div className="max-w-4xl mx-auto mt-8 p-6 bg-[#0C2342] rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold mb-6 border-b-4 border-[#215caa] inline-block">
-          Crear Noticia
-        </h1>
+      <div
+        className="max-w-3xl mx-auto mt-8 p-6 rounded-lg shadow-md"
+        style={{
+          backgroundColor: "rgba(12, 35, 66, 0.4)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+        }}
+      >
+        <h2 className="text-2xl font-bold text-black mb-4">Crear nuevo post</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Headline */}
-          <div>
-            <label className="block mb-2 font-bold">Título principal *</label>
-            <input
-              type="text"
-              value={headline}
-              onChange={(e) => setHeadline(e.target.value)}
-              placeholder="Ingrese el título de la noticia"
-              className="w-full p-3 rounded bg-white/20 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#215caa]"
-              required
-            />
-          </div>
+        <ReactQuill
+          theme="snow"
+          placeholder="Headline"
+          className="w-full mb-4 p-2 text-black bg-white rounded"
+          value={post.headLine}
+          onChange={(value) => setPost({ ...post, headLine: value })}
+          modules={modules}
+          formats={formats}
+        />
 
-          {/* Lead */}
-          <div>
-            <label className="block mb-2 font-bold">Lead *</label>
-            <textarea
-              value={lead}
-              onChange={(e) => setLead(e.target.value)}
-              placeholder="Resumen inicial de la noticia"
-              className="w-full p-3 rounded bg-white/20 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#215caa]"
-              rows={3}
-              required
-            />
-          </div>
+        <ReactQuill
+          theme="snow"
+          placeholder="Lead"
+          value={post.lead}
+          onChange={(value) => setPost({ ...post, lead: value })}
+          className="mb-4 bg-white text-black"
+          modules={modules}
+          formats={formats}
+        />
+        <ReactQuill
+          theme="snow"
+          placeholder="Body"
+          value={post.body}
+          onChange={(value) => setPost({ ...post, body: value })}
+          className="mb-4 bg-white text-black"
+          modules={modules}
+          formats={formats}
+        />
+        <ReactQuill
+          theme="snow"
+          placeholder="Conclusion"
+          value={post.conclusion}
+          onChange={(value) => setPost({ ...post, conclusion: value })}
+          className="mb-4 bg-white text-black"
+          modules={modules}
+          formats={formats}
+        />
 
-          {/* Body */}
-          <div>
-            <label className="block mb-2 font-bold">Cuerpo de la noticia *</label>
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Texto completo de la noticia. Podés incluir links a imágenes o videos."
-              className="w-full p-3 rounded bg-white/20 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#215caa]"
-              rows={6}
-              required
-            />
-          </div>
+        {/* Word File */}
+        <div className="mb-4">
+          <label className="text-black mr-2">Cargar archivo Word:</label>
+          <input
+            type="file"
+            accept=".doc,.docx"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              setWordFile(file);
+              handleWordUpload(file);
+            }}
+          />
+          {wordFile && (
+            <p className="text-black mt-1">Archivo seleccionado: {wordFile.name}</p>
+          )}
+        </div>
 
-          {/* Conclusion */}
-          <div>
-            <label className="block mb-2 font-bold">Conclusión (opcional)</label>
-            <textarea
-              value={conclusion}
-              onChange={(e) => setConclusion(e.target.value)}
-              placeholder="Conclusión o comentarios finales"
-              className="w-full p-3 rounded bg-white/20 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#215caa]"
-              rows={3}
-            />
-          </div>
+        {/* Media */}
+        <div className="mb-4 flex text-black gap-2">
+          <input type="text" id="mediaUrl" placeholder="URL media" className="p-2 rounded" />
+          <select id="mediaType" className="p-2 rounded">
+            <option value="image">Imagen</option>
+            <option value="video">Video</option>
+          </select>
+          <button
+            onClick={() => {
+              const url = document.getElementById("mediaUrl").value;
+              const type = document.getElementById("mediaType").value;
+              addMedia(url, type);
+              document.getElementById("mediaUrl").value = "";
+            }}
+            className="bg-blue-500 text-black px-4 py-2 rounded"
+          >
+            Agregar media
+          </button>
+        </div>
+        <div className="mb-4">
+          {post.media.map((m, i) => (
+            <p key={i} className="text-black">
+              {m.type}: {m.url}
+            </p>
+          ))}
+        </div>
 
-          {/* Botón enviar */}
-          <div>
-            <button
-              type="submit"
-              className="bg-[#215caa] hover:bg-[#1B4A8A] py-3 px-6 rounded font-bold transition-colors w-full md:w-auto"
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <span
+              key={tag.tag_id}
+              onClick={() => toggleTag(tag.tag_id)}
+              className={`px-3 py-1 rounded cursor-pointer ${selectedTags.includes(tag.tag_id)
+                  ? "bg-blue-600 text-black"
+                  : "bg-gray-300 text-black"
+                }`}
             >
-              Crear Noticia
-            </button>
-          </div>
-        </form>
+              {tag.tag_name}
+            </span>
+          ))}
+        </div>
+
+        <button
+          onClick={handleCreatePost}
+          className="bg-[#215caa] hover:bg-[#1B4A8A] py-2 rounded font-bold transition-colors"
+        >
+          Crear Post
+        </button>
       </div>
     </div>
   );
-};
+}
 
-export default CreatePost;
+export default Post;

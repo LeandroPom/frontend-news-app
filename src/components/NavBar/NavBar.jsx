@@ -1,13 +1,25 @@
 // Navbar.jsx
 import React from "react";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../redux/actions/postsActions";
+import { FaUserCircle } from "react-icons/fa"; // icono de usuario
 
 function Navbar() {
+  const dispatch = useDispatch();
+
+  // ✅ Tomamos el usuario del state
+  const user = useSelector((state) => state.posts.user);
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
   return (
     <nav
       className="text-white shadow-md backdrop-blur-md"
       style={{
-        backgroundColor: "rgba(18, 51, 95, 0.6)", // color #12335F con 60% de opacidad
+        backgroundColor: "rgba(18, 51, 95, 0.6)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
@@ -15,20 +27,48 @@ function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          
+
           {/* Título */}
           <div className="flex-shrink-0">
-            <h1 className="text-xl font-bold">Palabra Argentina</h1>
+            <Link to="/home">
+              <h1 className="text-xl font-bold hover:text-blue-600 transition">
+                Palabra Argentina
+              </h1>
+            </Link>
           </div>
 
           {/* Links */}
-          <div className="hidden md:flex space-x-6">
-             <Link
-              to="/login"
-              className="hover:text-red-500 transition-colors"
-            >
-              Acceder
-            </Link>
+          <div className="hidden md:flex space-x-6 items-center">
+            {!user ? (
+              <Link
+                to="/login"
+                className="hover:text-red-500 transition-colors"
+              >
+                Acceder
+              </Link>
+            ) : (
+              <>
+                {/* Icono y link a MiPerfil */}
+                <div className="flex items-center space-x-2">
+                  <FaUserCircle size={24} />
+                  <Link
+                    to="/Miperfil"
+                    className="hover:text-blue-500 transition font-medium"
+                  >
+                    MiPerfil
+                  </Link>
+                </div>
+
+                {/* Botón logout */}
+                <button
+                  onClick={handleLogout}
+                  className="hover:text-red-500 transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+
             <a href="#" className="hover:text-red-500 transition-colors">Noticias recientes</a>
             <a href="#" className="hover:text-red-500 transition-colors">Información</a>
             <a href="#" className="hover:text-red-500 transition-colors">Noticias locales</a>

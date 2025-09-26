@@ -81,3 +81,28 @@ a:hover {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+/* React Quill en fondo blanco */
+/* Contenedor del editor */
+/* Contenedor del editor */
+.ql-container {
+  background-color: white;  /* fondo blanco general */
+  border-radius: 0.5rem;
+}
+
+/* Editor real */
+.ql-editor {
+  min-height: 200px;
+  color: black;             /* color por defecto */
+  background-color: white;  /* fondo blanco del editor */
+}
+
+/* Quitar únicamente los backgrounds de spans, sin tocar el color */
+.ql-editor span[style*="background-color"] {
+  background-color: transparent !important;
+}
+
+/* Placeholder */
+.ql-editor.ql-blank::before {
+  color: #999999;
+}

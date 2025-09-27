@@ -17,14 +17,21 @@ const Home = () => {
   });
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await axios.get("/posts"); // tu backend
-        setPosts(res.data);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    };
+  const fetchPosts = async () => {
+    try {
+      const res = await axios.get("/posts"); // tu backend
+
+      // Ordenamos primero por rating_positive descendente
+      const sortedPosts = [...res.data].sort(
+        (a, b) => (b.rating_positive || 0) - (a.rating_positive || 0)
+      );
+
+      setPosts(sortedPosts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
+
 
     const fetchDolar = async () => {
       try {

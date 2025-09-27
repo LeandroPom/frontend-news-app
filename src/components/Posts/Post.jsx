@@ -1,22 +1,67 @@
 import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Navbar from "../../components/NavBar/NavBar";
 import { Link, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
+
 import axios from "axios";
 
 function Post() {
   const { id } = useParams(); // obtenemos el id del post
   const [post, setPost] = useState(null);
+  const [liked, setLiked] = useState(false); // estado de like
+  const [likesCount, setLikesCount] = useState(0); // contador de likes
+  const user = useSelector((state) => state.posts.user);
+  const userId = user?.user_id;
+  // const userId = 1; 
 
   useEffect(() => {
     axios
       .get(`/posts/${id}`)
       .then((res) => {
-        // Si viene un array con un solo elemento, tomalo; si viene objeto, usarlo directamente
         const data = Array.isArray(res.data) ? res.data[0] : res.data;
         setPost(data);
+        setLikesCount(data.rating_positive || 0);
       })
       .catch((err) => console.error(err));
   }, [id]);
+
+ const handleLike = async () => {
+  try {
+    if (!post) return;
+
+    if (!userId) {
+      Swal.fire({
+        icon: "info",
+        title: "Inicia sesión",
+        text: "Debes estar logueado para dar 'Me gusta' 👍",
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "Ok",
+      });
+      return;
+    }
+
+    // toggle estado local
+    setLiked((prev) => !prev);
+
+    // actualizar contador localmente
+    setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
+
+    // enviar al backend
+    await axios.post("/ratings/vote", {
+      post_id: Number(post.post_id),
+      user_id: Number(userId),
+      vote_type: "positive",
+    });
+  } catch (err) {
+    console.error(err);
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Ocurrió un error al registrar tu voto ❌",
+    });
+  }
+};
 
   if (!post) {
     return (
@@ -57,8 +102,16 @@ function Post() {
           </span>
         </div>
 
-        {/* Vistas */}
-        <p className="text-sm text-gray-400 mb-4">👁️ {post.views} vistas</p>
+        {/* Vistas + Likes */}
+        <div className="flex items-center gap-4 text-gray-600 mb-4">
+          <p className="text-sm">👁️ {post.views} vistas</p>
+          <button
+            onClick={handleLike}
+            className="flex items-center gap-1 text-sm cursor-pointer hover:text-blue-600 transition"
+          >
+            {liked ? "👎 Ya no me gusta" : "👍 Me gusta"} ({likesCount})
+          </button>
+        </div>
 
         {/* Lead */}
         <div
@@ -75,7 +128,6 @@ function Post() {
           />
         )}
 
-
         {/* Body */}
         <div
           dangerouslySetInnerHTML={{ __html: post.body }}
@@ -90,7 +142,7 @@ function Post() {
           />
         )}
 
-        {/* Otros medios (excluyendo la primera imagen) */}
+        {/* Otros medios */}
         {post.PostMedia &&
           post.PostMedia.length > 1 &&
           post.PostMedia.slice(1).map((m, i) => (

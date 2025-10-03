@@ -11,6 +11,9 @@ import Busqueda from './pages/Searchs/SidebarBusqueda';
 import TagSelector from './components/Posts/TagSelector';
 import UserProfile from './components/Users/UserProfile';
 import AdminPanel from './components/Administration/AdminPanel';
+import AdminLayout from './components/Administration/AdminLayout';
+import SidebarPublicidad from './pages/Home/SidebarPublicidad';
+import BannerManager from './components/Administration/BannerManager';
 
 // import NavBar from './components/NavBar/NavBar';
 
@@ -33,9 +36,16 @@ function App() {
         <Route path='/Create' element={<CreatePost />} />
         <Route path='/Busqueda' element={<Busqueda />} />
         <Route path='/creartag' element={<TagSelector />} />
+        <Route path='/banner' element={<BannerManager />} />
          <Route path='/Miperfil' element={<UserProfile />} />
-         <Route path='/Administration' element={<AdminPanel />} />
-      </Routes>
+           {/* Rutas del admin */}
+  <Route path='/Administration' element={<AdminLayout />}>
+    <Route index element={<AdminPanel />} />   {/* Bienvenida */}
+    <Route path='create' element={<CreatePost />} />
+    <Route path='creartag' element={<TagSelector />} />
+    <Route path='banner' element={<BannerManager />} />
+  </Route>
+</Routes>
     </div>
   );
 }

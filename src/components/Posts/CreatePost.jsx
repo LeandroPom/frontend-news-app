@@ -4,6 +4,7 @@ import axios from "axios";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import mammoth from "mammoth";
+import { useSelector } from "react-redux";
 
 function Post() {
   const [tags, setTags] = useState([]);
@@ -17,7 +18,8 @@ function Post() {
     media: [],
   });
   const [wordFile, setWordFile] = useState(null);
-  const user_id = 1; // reemplazar por usuario logueado
+  const user = useSelector((state) => state.posts.user);
+  
 
 
   const modules = {
@@ -93,22 +95,32 @@ function Post() {
   };
 
   // Crear post
-  const handleCreatePost = async () => {
-    try {
-      const payload = { ...post, tags: selectedTags, user_id };
-      console.log("Payload enviado al backend:", payload);
-
-      await axios.post("/posts", payload);
-      alert("Post creado con éxito");
-
-      setPost({ headLine: "", lead: "", body: "", conclusion: "", media: [] });
-      setSelectedTags([]);
-      setWordFile(null);
-    } catch (err) {
-      console.error("Error creando post:", err);
-      alert("Error creando post");
+ const handleCreatePost = async () => {
+  try {
+    if (!user || !user.user_id) {
+      alert("No hay usuario logueado");
+      return;
     }
-  };
+
+    const payload = { 
+      ...post, 
+      tags: selectedTags, 
+      user_id: user.user_id  // 👈 usamos el id real del usuario logueado
+    };
+
+    console.log("Payload enviado al backend:", payload);
+
+    await axios.post("/posts", payload);
+    alert("Post creado con éxito");
+
+    setPost({ headLine: "", lead: "", body: "", conclusion: "", media: [] });
+    setSelectedTags([]);
+    setWordFile(null);
+  } catch (err) {
+    console.error("Error creando post:", err);
+    alert("Error creando post");
+  }
+};
 
   const handleWordUpload = async (file) => {
     if (!file) return;
@@ -127,7 +139,7 @@ function Post() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#12335F" }}>
-      <Navbar />
+      {/* <Navbar /> */}
 
       <div
         className="max-w-3xl mx-auto mt-8 p-6 rounded-lg shadow-md"
@@ -237,6 +249,7 @@ function Post() {
             </span>
           ))}
         </div>
+
 
         <button
           onClick={handleCreatePost}

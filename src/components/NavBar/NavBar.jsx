@@ -10,7 +10,7 @@ function Navbar() {
 
   // ✅ Tomamos el usuario del state
   const user = useSelector((state) => state.posts.user);
-
+console.log(user, "datos de usuario")
   const handleLogout = () => {
     dispatch(logout());
   };

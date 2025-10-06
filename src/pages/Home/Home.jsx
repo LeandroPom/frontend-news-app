@@ -57,9 +57,14 @@ const Home = () => {
     fetchDolar();
   }, []);
 
-  const mainPost = posts[0];
-  const secondaryPosts = posts.slice(1, 3);
-  const otherPosts = posts.slice(3);
+ // Solo posts activos
+const sortedActivePosts = posts
+  .filter(p => p.active) 
+  .sort((a, b) => (b.rating_positive || 0) - (a.rating_positive || 0));
+
+const mainPost = sortedActivePosts[0];
+const secondaryPosts = sortedActivePosts.slice(1, 3);
+const otherPosts = sortedActivePosts.slice(3);
 
   const getPostImage = (post) => {
     return post.PostMedia?.length > 0

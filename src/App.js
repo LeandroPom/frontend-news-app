@@ -14,6 +14,8 @@ import AdminPanel from './components/Administration/AdminPanel';
 import AdminLayout from './components/Administration/AdminLayout';
 import SidebarPublicidad from './pages/Home/SidebarPublicidad';
 import BannerManager from './components/Administration/BannerManager';
+import AdminUserPanel from './components/Administration/AdminUserPanel';
+import AdminPostPanel from './components/Administration/AdminPostPanel';
 
 // import NavBar from './components/NavBar/NavBar';
 
@@ -44,6 +46,8 @@ function App() {
     <Route path='create' element={<CreatePost />} />
     <Route path='creartag' element={<TagSelector />} />
     <Route path='banner' element={<BannerManager />} />
+    <Route path='Userpanel' element={<AdminUserPanel />} />
+    <Route path='Postpanel' element={<AdminPostPanel />} />
   </Route>
 </Routes>
     </div>

@@ -21,6 +21,12 @@ const AdminLayout = () => {
           <Link to="banner" className={linkClasses}>
             Crear Banner
           </Link>
+           <Link to="userpanel" className={linkClasses}>
+            Panel de usuarios
+          </Link>
+           <Link to="postpanel" className={linkClasses}>
+            Panel de Posts
+          </Link>
           <Link to="/home" className={linkClasses + " mt-6"}>
             Salir
           </Link>

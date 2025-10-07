@@ -1,23 +1,76 @@
-// Navbar.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/actions/postsActions";
-import { FaUserCircle } from "react-icons/fa"; // icono de usuario
+import { FaUserCircle } from "react-icons/fa";
+import { motion } from "framer-motion";
+import axios from "axios";
+
+// 🔵⚪🔵 Letras animadas estilo bandera argentina (pero legibles)
+const AnimatedLetters = ({ text }) => {
+  return (
+    <span className="inline-block">
+      {text.split("").map((char, index) => (
+        <motion.span
+          key={index}
+          className="inline-block font-extrabold"
+          style={{
+            background: "linear-gradient(90deg, #00bfff, #ffffff, #00bfff)",
+            backgroundSize: "200% auto",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+          }}
+          animate={{
+            y: [0, -4, 0],
+            backgroundPosition: ["0% center", "200% center"],
+          }}
+          transition={{
+            y: {
+              repeat: Infinity,
+              duration: 1.6,
+              ease: "easeInOut",
+              delay: index * 0.08,
+            },
+            backgroundPosition: {
+              repeat: Infinity,
+              duration: 2.5,
+              ease: "linear",
+              delay: index * 0.05,
+            },
+          }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </span>
+  );
+};
 
 function Navbar() {
   const dispatch = useDispatch();
-
-  // ✅ Tomamos el usuario del state
   const user = useSelector((state) => state.posts.user);
-console.log(user, "datos de usuario")
+  const [usdBlue, setUsdBlue] = useState(null);
+
   const handleLogout = () => {
     dispatch(logout());
   };
 
+  // 💰 Traer precio del dólar blue al montar
+  useEffect(() => {
+    const fetchDolar = async () => {
+      try {
+        const res = await axios.get("https://api.bluelytics.com.ar/v2/latest");
+        setUsdBlue(res.data.blue);
+      } catch (err) {
+        console.error("Error al obtener el dólar:", err);
+      }
+    };
+    fetchDolar();
+  }, []);
+
   return (
     <nav
-      className="text-white shadow-md backdrop-blur-md"
+      className="text-white shadow-md backdrop-blur-md fixed top-0 left-0 w-full z-50"
       style={{
         backgroundColor: "rgba(18, 51, 95, 0.6)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
@@ -28,55 +81,63 @@ console.log(user, "datos de usuario")
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
 
-          {/* Título */}
-          <div className="flex-shrink-0">
+          {/* 🇦🇷 Título animado */}
+          <div className="flex-shrink-0 select-none">
             <Link to="/home">
-              <h1 className="text-xl font-bold hover:text-blue-600 transition">
-                Palabra Argentina
+              <h1 className="text-2xl font-extrabold tracking-wide">
+                <AnimatedLetters text="Palabra Argentina" />
               </h1>
             </Link>
           </div>
 
-          {/* Links */}
+          {/* 💸 Precio del dólar blue */}
+          {/* {usdBlue && (
+            <div className="hidden sm:flex flex-col text-sm text-gray-200">
+              <span>
+                💵 <b>Dólar Blue:</b> Compra ${usdBlue.value_buy} | Venta $
+                {usdBlue.value_sell}
+              </span>
+            </div>
+          )} */}
+
+          {/* 🔗 Links de navegación */}
           <div className="hidden md:flex space-x-6 items-center">
             {!user ? (
               <Link
                 to="/login"
-                className="hover:text-red-500 transition-colors"
+                className="hover:text-red-400 transition-colors font-medium"
               >
                 Acceder
               </Link>
             ) : (
               <>
-                {/* Icono y link a MiPerfil */}
                 <div className="flex items-center space-x-2">
                   <FaUserCircle size={24} />
                   <Link
                     to="/Miperfil"
-                    className="hover:text-blue-500 transition font-medium"
+                    className="hover:text-sky-400 transition font-medium"
                   >
-                    MiPerfil
+                    Mi Perfil
                   </Link>
                 </div>
-
-                {/* Botón logout */}
                 <button
                   onClick={handleLogout}
-                  className="hover:text-red-500 transition-colors"
+                  className="hover:text-red-400 transition-colors font-medium"
                 >
                   Logout
                 </button>
               </>
             )}
 
-            <a href="#" className="hover:text-red-500 transition-colors">Noticias recientes</a>
-            <a href="#" className="hover:text-red-500 transition-colors">Información</a>
-            <a href="#" className="hover:text-red-500 transition-colors">Noticias locales</a>
-            <a href="#" className="hover:text-red-500 transition-colors">Noticias mundiales</a>
-            <a href="#" className="hover:text-red-500 transition-colors">Contáctanos</a>
+            <Link
+              to="/contacto"
+              className="hover:text-sky-300 transition-colors font-medium"
+            >
+              Contáctanos
+            </Link>
           </div>
 
-          {/* Botón móvil (hamburguesa) */}
+          {/* ☰ Botón móvil */}
           <div className="md:hidden">
             <button className="focus:outline-none">
               <svg
@@ -86,10 +147,16 @@ console.log(user, "datos de usuario")
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
+
         </div>
       </div>
     </nav>

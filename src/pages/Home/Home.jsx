@@ -6,6 +6,7 @@ import Sidebar from "../../pages/Home/Sidebar";
 import axios from "axios";
 // Al inicio del archivo
 import SidebarPublicidad from "../../pages/Home/SidebarPublicidad"; // Ajustá la ruta según tu estructura
+import Carousel from "../Carrousel/Carrousel";
 
 
 const Home = () => {
@@ -15,6 +16,21 @@ const Home = () => {
     blue: "---",
     mayorista: "---",
   });
+  const [banners, setBanners] = useState([]);
+
+  useEffect(() => {
+  const fetchBanners = async () => {
+    try {
+      const res = await axios.get("/banners");
+      setBanners(res.data);
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+    }
+  };
+
+  fetchBanners();
+}, []);
+
 
   useEffect(() => {
   const fetchPosts = async () => {
@@ -81,6 +97,8 @@ const otherPosts = sortedActivePosts.slice(3);
     <div className="min-h-screen bg-gray-100">
       <Navbar />
 
+      <Carousel banners={banners} />
+
       {/* Franja de cotizaciones */}
       <div className="bg-gray-800 text-white py-2 px-4 flex justify-around text-sm">
         <span>Dólar Oficial: {cotizaciones.oficial}</span>
@@ -88,7 +106,7 @@ const otherPosts = sortedActivePosts.slice(3);
         <span>Dólar Mayorista: {cotizaciones.mayorista}</span>
       </div>
 
-      <div className="flex flex-col lg:flex-row max-w-7xl mx-auto mt-4 px-4 gap-4">
+      <div className="flex flex-col lg:flex-row max-w-7xl mx-auto mt-10 px-4 gap-4">
         {/* Sidebar izquierdo */}
         <div className="w-full lg:w-1/5">
           <Sidebar />

@@ -41,8 +41,8 @@ const SidebarPublicidad = () => {
           className="rounded shadow overflow-hidden transition-opacity duration-500 absolute"
           style={{
             right: 0,
-            width: "40%",
-            height: "200%",
+            width: "60%",
+            height: "150%",
             opacity: index === current ? 1 : 0,
           }}
         >

@@ -198,10 +198,10 @@ const BannerManager = () => {
             >
               <div>
                 <h3 className="text-black font-semibold">{banner.banner_name}</h3>
-                <p>{banner.img.join(", ")}</p>
-                <p>Activo: {banner.active ? "Sí" : "No"}</p>
+                <p className="text-black font-semibold">{banner.img.join(", ")}</p>
+                <p className="text-black font-semibold">Activo: {banner.active ? "Sí" : "No"}</p>
                 {banner.timer && (
-                  <p>
+                  <p className="text-black font-semibold">
                     Timer: {banner.timer_start} - {banner.timer_end}
                   </p>
                 )}

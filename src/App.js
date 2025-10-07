@@ -16,6 +16,7 @@ import SidebarPublicidad from './pages/Home/SidebarPublicidad';
 import BannerManager from './components/Administration/BannerManager';
 import AdminUserPanel from './components/Administration/AdminUserPanel';
 import AdminPostPanel from './components/Administration/AdminPostPanel';
+import Noticias from './pages/Noticias';
 
 // import NavBar from './components/NavBar/NavBar';
 
@@ -31,7 +32,7 @@ function App() {
       {/* {location.pathname !== '/' && <NavBar />} */}
 
       <Routes>
-        <Route path='/' element={<Landing />} />
+        <Route path='/' element={<Home />} />
         <Route path='/home' element={<Home />} />
         <Route path='/post/:id' element={<Post />} />
         <Route path='/Login' element={<LoginRegisterBox />} />
@@ -39,6 +40,7 @@ function App() {
         <Route path='/Busqueda' element={<Busqueda />} />
         <Route path='/creartag' element={<TagSelector />} />
         <Route path='/banner' element={<BannerManager />} />
+        <Route path="/noticias" element={<Noticias />} />
          <Route path='/Miperfil' element={<UserProfile />} />
            {/* Rutas del admin */}
   <Route path='/Administration' element={<AdminLayout />}>

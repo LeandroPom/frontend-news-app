@@ -87,13 +87,9 @@ const LoginRegisterBox = () => {
   // ⚡ Efecto que dispara SweetAlert y redirige cuando login es exitoso
   useEffect(() => {
     if (user) {
-      Swal.fire({
-        title: "Login exitoso",
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
+    
         navigate("/home");
-      });
+     
     }
   }, [user, navigate]);
 

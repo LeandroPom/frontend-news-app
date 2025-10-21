@@ -4,7 +4,7 @@ import { Link, Outlet } from "react-router-dom";
 
 const AdminLayout = () => {
   const linkClasses =
-    "block bg-white text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-xl hover:bg-gray-100 transition-all duration-200";
+    "block text-black font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200";
 
   return (
     <div className="min-h-screen flex bg-[#f9f9f9]">

@@ -106,14 +106,15 @@ const otherPosts = sortedActivePosts.slice(3);
         <span>Dólar Mayorista: {cotizaciones.mayorista}</span>
       </div>
 
-      <div className="flex flex-col lg:flex-row max-w-7xl mx-auto mt-10 px-4 gap-4">
+      
         {/* Sidebar izquierdo */}
-        <div className="w-full lg:w-1/5">
-          <Sidebar />
-        </div>
+        <div className="relative flex flex-col lg:flex-row max-w-7xl mx-auto mt-10 px-4 gap-4">
+  {/* Sidebar flotante */}
+  <Sidebar />
 
-        {/* Noticias centrales */}
-        <div className="flex-1 space-y-4">
+  {/* Noticias centrales */}
+  <div className="flex-1 space-y-4 w-full">
+
           {/* Noticia principal */}
           {mainPost && (
             <Link to={`/post/${mainPost.post_id}`} className="block relative w-full h-64 md:h-96 rounded overflow-hidden shadow-md">

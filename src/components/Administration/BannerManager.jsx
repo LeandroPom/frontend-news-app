@@ -21,7 +21,7 @@ const BannerManager = () => {
       setLoading(true);
       const res = await axios.get("/banners");
       setBanners(res.data);
-      console.log(res.data, "respuesta del back");
+      // console.log(res.data, "respuesta del back");
     } catch (err) {
       console.error(err);
       alert("Error al cargar banners");

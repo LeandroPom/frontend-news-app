@@ -1,5 +1,6 @@
 // UserProfile.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -7,7 +8,7 @@ import axios from "axios";
 const UserProfile = () => {
   const user = useSelector((state) => state.posts.user);
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     user_name: user?.user_name || "",
@@ -40,7 +41,7 @@ const UserProfile = () => {
       const dataToSend = { ...formData };
       if (dataToSend.password.trim() === "") delete dataToSend.password;
       const response = await axios.put(`/users/${user.user_id}`, dataToSend);
-      
+
       const data = response.data;
       setMessage("Perfil actualizado correctamente ✅");
       setEditMode(false);
@@ -58,9 +59,9 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f9f9f9] p-6 flex justify-center">
+    <div className="min-h-screen bg-[#f9f9f9] p-6 flex justify-center items-center">
       <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md text-black">
-        <h1 className="text-2xl font-bold mb-6">Mi perfil personal</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Mi perfil personal</h1>
 
         {editMode ? (
           <form onSubmit={handleUpdate} className="space-y-4">
@@ -71,7 +72,7 @@ const UserProfile = () => {
                 name="user_name"
                 value={formData.user_name}
                 onChange={handleChange}
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-[#0C2342]"
               />
             </div>
 
@@ -82,7 +83,7 @@ const UserProfile = () => {
                 name="mail"
                 value={formData.mail}
                 onChange={handleChange}
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-[#0C2342]"
               />
             </div>
 
@@ -93,7 +94,7 @@ const UserProfile = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-[#0C2342]"
                 placeholder="Dejar vacío para no cambiar"
               />
             </div>
@@ -105,28 +106,34 @@ const UserProfile = () => {
                 name="profilePic"
                 value={formData.profilePic}
                 onChange={handleChange}
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-[#0C2342]"
               />
             </div>
 
             {message && (
-              <p className={`text-sm ${message.includes("✅") ? "text-green-600" : "text-red-600"}`}>
+              <p
+                className={`text-sm ${message.includes("✅") ? "text-green-600" : "text-red-600"
+                  }`}
+              >
                 {message}
               </p>
             )}
 
-            <div className="flex gap-2">
+            {/* Botones principales */}
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition w-full"
+                className={`primary w-full text-white font-semibold py-2 px-4 rounded transition
+                ${loading ? "opacity-70 cursor-not-allowed" : "hover:bg-[#1B4A8A]"}`}
               >
                 {loading ? "Guardando..." : "Guardar cambios"}
               </button>
+
               <button
                 type="button"
                 onClick={() => setEditMode(false)}
-                className="bg-gray-400 text-white font-semibold py-2 px-4 rounded hover:bg-gray-500 transition w-full"
+                className="secondary w-full font-semibold py-2 px-4 rounded transition hover:bg-[#ADC8E6] hover:text-[#0C2342]"
               >
                 Cancelar
               </button>
@@ -162,31 +169,36 @@ const UserProfile = () => {
               </div>
             )}
 
-            <Link
-              onClick={() => setEditMode(true)}
-              className="block w-full text-center bg-yellow-500 text-white font-semibold py-2 rounded hover:bg-blue-600 transition mb-3"
-            >
-              Editar perfil
-            </Link>
+            <div className="flex flex-col gap-3">
+  <button
+    onClick={() => setEditMode(true)}
+    className="primary w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
+  >
+    Editar perfil
+  </button>
 
-            <Link
-              to="/Administration"
-              className="block w-full text-center bg-blue-500 text-white font-semibold py-2 rounded hover:bg-blue-600 transition mb-3"
-            >
-              Admin Panel
-            </Link>
+  <button
+    onClick={() => navigate("/Administration")}
+    className="secondary w-medium font-semibold py-2 rounded-lg hover:bg-[#ADC8E6] hover:text-[#0C2342] transition"
+  >
+    Admin Panel
+  </button>
 
-            <Link
-              to="/home"
-              className="block w-full text-center bg-red-500 text-white font-semibold py-2 rounded hover:bg-red-600 transition"
-            >
-              Salir
-            </Link>
+  <button
+    onClick={() => navigate("/home")}
+    className="pagina w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
+  >
+    Salir
+  </button>
+</div>
+
+
           </>
         )}
       </div>
     </div>
   );
+
 };
 
 export default UserProfile;

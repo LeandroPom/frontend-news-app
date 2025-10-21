@@ -11,7 +11,7 @@ const Carousel = () => {
       try {
         const response = await axios.get('/banners');
         const priorityBanners = response.data.filter(b => b.priority);
-console.log(response.data);
+// console.log(response.data);
         setBanners(priorityBanners);
       } catch (error) {
         console.error('Error fetching banners:', error);

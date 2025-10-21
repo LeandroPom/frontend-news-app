@@ -89,7 +89,7 @@ export default function AdminUserPanel() {
       password: "",
       admin: user.admin,
       editor: user.editor,
-      // premium: user.premium,
+      premium: user.premium,
       active: user.active,
     });
   };
@@ -297,7 +297,7 @@ const saveEdit = () => {
 
               {/* Roles */}
               <div className="flex gap-4">
-                {["admin", "editor"].map((role) => (
+                {["admin", "editor", "premium"].map((role) => (
                   <label key={role} className="flex items-center gap-1">
                     <input
                       type="checkbox"

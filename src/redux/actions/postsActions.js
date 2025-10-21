@@ -120,7 +120,7 @@ export const fetchPosts = () => async (dispatch) => {
     const { data } = await axios.get("/posts");
 
     dispatch({ type: "GET_POSTS_SUCCESS", payload: data });
-    console.log("Posts desde backend:", data);
+    // console.log("Posts desde backend:", data);
   } catch (err) {
     dispatch({
       type: "GET_POSTS_FAILURE",

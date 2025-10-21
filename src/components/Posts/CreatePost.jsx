@@ -108,7 +108,7 @@ function Post() {
       user_id: user.user_id  // 👈 usamos el id real del usuario logueado
     };
 
-    console.log("Payload enviado al backend:", payload);
+    // console.log("Payload enviado al backend:", payload);
 
     await axios.post("/posts", payload);
     alert("Post creado con éxito");

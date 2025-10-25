@@ -32,7 +32,7 @@ export default function AdminPostPanel() {
   };
   const formats = ["bold", "italic", "list", "bullet", "link", "image"];
 
-  if (!user || !user.roles?.admin) {
+  if (!user) {
     return <div className="p-4 text-center text-red-500">🚫 No tienes permisos</div>;
   }
 
@@ -44,6 +44,7 @@ export default function AdminPostPanel() {
     setFilteredPosts(allPosts);
   }, [allPosts]);
 
+  // 🔍 Búsqueda
   const handleSearch = (e) => {
     e.preventDefault();
     if (!search.trim()) {
@@ -53,6 +54,7 @@ export default function AdminPostPanel() {
     dispatch(searchPosts(search));
   };
 
+  // ✏️ Seleccionar post para editar
   const selectForEdit = (post) => {
     setSelectedPost(post);
     setEditData({
@@ -66,15 +68,26 @@ export default function AdminPostPanel() {
     });
   };
 
+  // 💾 Guardar cambios
   const saveEdit = () => {
+    if (!selectedPost) return;
     dispatch(editPost(selectedPost.post_id, editData));
     setSelectedPost(null);
+    setEditData({});
   };
 
+  // ❌ Cancelar edición
+  const handleCancelEdit = () => {
+    setSelectedPost(null);
+    setEditData({});
+  };
+
+  // 🔄 Toggle activo
   const handleToggleActive = (id, active) => {
     dispatch(togglePostActive(id, active));
   };
 
+  // 🗑 Eliminar post
   const handleDelete = (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este post?")) return;
     dispatch(deletePost(id));
@@ -86,9 +99,7 @@ export default function AdminPostPanel() {
     currentPage * PAGE_SIZE
   );
 
-   const sanitizeHeadline = (html) => {
-    return html.replace(/<\/?h1[^>]*>/g, ""); // elimina <h1> y </h1>
-  };
+  const sanitizeHeadline = (html) => html.replace(/<\/?h1[^>]*>/g, "");
 
   return (
     <div className="p-6">
@@ -103,7 +114,9 @@ export default function AdminPostPanel() {
           onChange={(e) => setSearch(e.target.value)}
           className="border rounded-lg p-2 flex-1"
         />
-        <button className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600">Buscar</button>
+        <button className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600">
+          Buscar
+        </button>
       </form>
 
       {/* Loading */}
@@ -117,6 +130,7 @@ export default function AdminPostPanel() {
               <tr>
                 <th className="p-2 border">ID</th>
                 <th className="p-2 border">Headline</th>
+                <th className="p-2 border">Autor</th>
                 <th className="p-2 border">Tags</th>
                 <th className="p-2 border">Activo</th>
                 <th className="p-2 border">Acciones</th>
@@ -127,21 +141,40 @@ export default function AdminPostPanel() {
                 <tr key={p.post_id} className="bg-gray-400 text-center">
                   <td className="border p-2">{p.post_id}</td>
                   <td
-  className="border p-2"
-  dangerouslySetInnerHTML={{ __html: sanitizeHeadline(p.headLine) }}
-></td>
+                    className="border p-2"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHeadline(p.headLine) }}
+                  />
+                  <td className="border p-2">{p.User?.user_name || "—"}</td>
                   <td className="border p-2">{p.Tags?.map((t) => t.tag_name).join(", ") || "—"}</td>
                   <td className="border p-2">
                     <button
                       onClick={() => handleToggleActive(p.post_id, p.active)}
-                      className={`px-3 py-1 rounded-lg text-black ${p.active ? "bg-green-500" : "bg-gray-400"}`}
+                      disabled={!user.roles?.admin} // solo admin puede presionar
+                      className={`px-3 py-1 rounded-lg text-black ${p.active ? "bg-green-500" : "bg-gray-400"
+                        } ${!user.roles?.admin ? "cursor-not-allowed opacity-70" : "hover:bg-green-600"}`}
                     >
                       {p.active ? "Activo" : "Inactivo"}
                     </button>
                   </td>
                   <td className="border p-2 flex justify-center gap-2">
-                    <button onClick={() => selectForEdit(p)} className="bg-yellow-400 px-3 py-1 rounded-lg">Editar</button>
-                    <button onClick={() => handleDelete(p.post_id)} className="bg-red-500 px-3 py-1 rounded-lg">Eliminar</button>
+                    {/* Solo admin o autor pueden editar */}
+                    {(user.roles?.admin || user.user_id === p.user_id) && (
+                      <button
+                        onClick={() => selectForEdit(p)}
+                        className="bg-yellow-400 px-3 py-1 rounded-lg"
+                      >
+                        Editar
+                      </button>
+                    )}
+                    {/* Solo admin puede eliminar */}
+                    {user.roles?.admin && (
+                      <button
+                        onClick={() => handleDelete(p.post_id)}
+                        className="bg-red-500 px-3 py-1 rounded-lg"
+                      >
+                        Eliminar
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -169,36 +202,45 @@ export default function AdminPostPanel() {
         </>
       )}
 
-      {/* Editor inline dentro del panel */}
-      {selectedPost && (
+      {/* Editor inline solo para admin o autor */}
+      {selectedPost && (user.roles?.admin || user.user_id === selectedPost.user_id) ? (
         <div className="bg-white rounded-lg shadow-md p-6 mt-6 max-w-4xl mx-auto">
           <h2 className="text-xl font-semibold mb-4">Editar Post #{selectedPost.post_id}</h2>
 
           <div className="flex flex-col gap-4">
             <ReactQuill
-              value={editData.headLine}
-              onChange={(value) => setEditData({ ...editData, headLine: value })}
+              value={editData.headLine || ""}
+              onChange={(value) => {
+                if (value !== editData.headLine) setEditData({ ...editData, headLine: value });
+              }}
               modules={modules}
               formats={formats}
               className="bg-white"
             />
             <ReactQuill
-              value={editData.lead}
-              onChange={(value) => setEditData({ ...editData, lead: value })}
+              value={editData.lead || ""}
+              onChange={(value) => {
+                if (value !== editData.lead) setEditData({ ...editData, lead: value });
+              }}
               modules={modules}
               formats={formats}
               className="bg-white"
             />
             <ReactQuill
-              value={editData.body}
-              onChange={(value) => setEditData({ ...editData, body: value })}
+              value={editData.body || ""}
+              onChange={(value) => {
+                if (value !== editData.body) setEditData({ ...editData, body: value });
+              }}
               modules={modules}
               formats={formats}
               className="bg-white"
             />
             <ReactQuill
-              value={editData.conclusion}
-              onChange={(value) => setEditData({ ...editData, conclusion: value })}
+              value={editData.conclusion || ""}
+              onChange={(value) => {
+                if (value !== editData.conclusion)
+                  setEditData({ ...editData, conclusion: value });
+              }}
               modules={modules}
               formats={formats}
               className="bg-white"
@@ -207,7 +249,7 @@ export default function AdminPostPanel() {
             <label className="flex items-center gap-2 mt-2">
               <input
                 type="checkbox"
-                checked={editData.active}
+                checked={editData.active || false}
                 onChange={() => setEditData({ ...editData, active: !editData.active })}
                 className="accent-blue-500"
               />
@@ -216,14 +258,16 @@ export default function AdminPostPanel() {
 
             <div className="flex flex-wrap gap-2 mt-2">
               {selectedPost.Tags?.map((t) => (
-                <span key={t.tag_id} className="px-3 py-1 bg-gray-300 rounded">{t.tag_name}</span>
+                <span key={t.tag_id} className="px-3 py-1 bg-gray-300 rounded">
+                  {t.tag_name}
+                </span>
               ))}
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row justify-end gap-3 mt-4">
             <button
-              onClick={() => setSelectedPost(null)}
+              onClick={handleCancelEdit}
               className="px-4 py-2 bg-gray-300 rounded-lg w-full md:w-auto"
             >
               Cancelar
@@ -236,7 +280,11 @@ export default function AdminPostPanel() {
             </button>
           </div>
         </div>
-      )}
+      ) : selectedPost ? (
+        <div className="text-center text-red-500 mt-6">
+          🚫 No tienes permiso para editar este post.
+        </div>
+      ) : null}
     </div>
   );
 }

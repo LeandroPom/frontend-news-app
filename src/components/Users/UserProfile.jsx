@@ -170,27 +170,44 @@ const UserProfile = () => {
             )}
 
             <div className="flex flex-col gap-3">
-  <button
-    onClick={() => setEditMode(true)}
-    className="primary w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
-  >
-    Editar perfil
-  </button>
+              {/* Botón editar perfil (todos pueden verlo) */}
+              <button
+                onClick={() => setEditMode(true)}
+                className="primary w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
+              >
+                Editar perfil
+              </button>
 
-  <button
-    onClick={() => navigate("/Administration")}
-    className="secondary w-medium font-semibold py-2 rounded-lg hover:bg-[#ADC8E6] hover:text-[#0C2342] transition"
-  >
-    Admin Panel
-  </button>
+              {/* Botón Panel de Admin → solo visible si es admin */}
+              {user.roles?.admin && (
+                <button
+                  onClick={() => navigate("/Administration")}
+                  className="secondary w-medium font-semibold py-2 rounded-lg hover:bg-[#ADC8E6] hover:text-[#0C2342] transition"
+                >
+                  Admin Panel
+                </button>
+              )}
 
-  <button
-    onClick={() => navigate("/home")}
-    className="pagina w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
-  >
-    Salir
-  </button>
-</div>
+              {/* Botón Mis Publicaciones → visible si es admin o editor */}
+              {(user.roles?.admin || user.roles?.editor) && (
+                <button
+                  onClick={() => navigate("/Administration/postpanel")}
+                  className="secondary w-medium font-semibold py-2 rounded-lg hover:bg-[#ADC8E6] hover:text-[#0C2342] transition"
+                >
+                  Mis Publicaciones
+                </button>
+              )}
+
+              {/* Botón Salir → visible para todos */}
+              <button
+                onClick={() => navigate("/home")}
+                className="pagina w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
+              >
+                Salir
+              </button>
+
+
+            </div>
 
 
           </>

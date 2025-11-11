@@ -7,6 +7,7 @@ import axios from "axios";
 // Al inicio del archivo
 import SidebarPublicidad from "../../pages/Home/SidebarPublicidad"; // Ajustá la ruta según tu estructura
 import Carousel from "../Carrousel/Carrousel";
+import Footer from "../../pages/Footer/Footer";
 
 
 const Home = () => {
@@ -195,6 +196,11 @@ const otherPosts = sortedActivePosts.slice(3);
           <SidebarPublicidad />
         </div>
       </div>
+       
+
+    {/* 👇 Footer al final 👇 */}
+    <Footer />
+  
     </div>
   );
 };

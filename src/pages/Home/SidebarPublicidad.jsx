@@ -34,24 +34,19 @@ const SidebarPublicidad = () => {
   if (banners.length === 0) return null;
 
   return (
-    <div className="w-full flex flex-col items-end gap-4 mt-4 lg:mt-0 relative h-60">
+   <div className="relative w-full h-56 sm:h-64 md:h-72 lg:h-80 overflow-hidden rounded shadow">
       {banners.map((banner, index) => (
-        <div
-          key={banner.id}
-          className="rounded shadow overflow-hidden transition-opacity duration-500 absolute"
-          style={{
-            right: 0,
-            width: "60%",
-            height: "150%",
-            opacity: index === current ? 1 : 0,
-          }}
-        >
+       <div
+    key={`${banner.id || index}-${index}`}
+    className={`absolute inset-0 transition-opacity duration-700
+    ${index === current ? "opacity-100" : "opacity-0"}`}
+  >
           <img
-            src={banner.img[0]} // asumimos que siempre hay al menos 1 imagen
+            src={banner.img[0]}
             alt={banner.banner_name}
             className="w-full h-full object-cover"
           />
-          <div className="p-1 font-semibold text-center text-black text-sm bg-white bg-opacity-70">
+          <div className="absolute bottom-0 w-full bg-white bg-opacity-70 text-center text-sm font-semibold text-black py-1">
             {banner.banner_name}
           </div>
         </div>

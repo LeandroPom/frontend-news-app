@@ -40,9 +40,14 @@ export default function AdminPostPanel() {
     dispatch(fetchPosts());
   }, [dispatch]);
 
-  useEffect(() => {
+ useEffect(() => {
+  if (user.roles?.admin) {
     setFilteredPosts(allPosts);
-  }, [allPosts]);
+  } else {
+    const userPosts = allPosts.filter(p => p.user_id === user.user_id);
+    setFilteredPosts(userPosts);
+  }
+}, [allPosts, user]);
 
   // 🔍 Búsqueda
   const handleSearch = (e) => {

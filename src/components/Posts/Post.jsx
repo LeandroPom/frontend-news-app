@@ -76,7 +76,7 @@ function Post() {
       <Navbar />
 
       <div
-        className="max-w-3xl mx-auto mt-8 p-6 rounded-lg shadow-md"
+        className="max-w-3xl mx-auto mt-20 p-6 rounded-lg shadow-md"
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.94)",
           backdropFilter: "blur(10px)",
@@ -86,7 +86,7 @@ function Post() {
       >
         {/* Título */}
         <h1
-          className="text-3xl font-bold mb-2"
+          className="text-black text-3xl font-bold mb-2"
           dangerouslySetInnerHTML={{ __html: post.headLine }}
         />
 
@@ -179,7 +179,7 @@ function Post() {
         {/* Botón volver */}
         <Link
           to="/home"
-          className="inline-block text-accent hover:text-accentLight font-medium mt-6"
+          className="text-black inline-block text-accent hover:text-accentLight font-medium mt-6"
         >
           ← Volver a las noticias
         </Link>

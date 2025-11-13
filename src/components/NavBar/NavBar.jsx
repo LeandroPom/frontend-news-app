@@ -3,59 +3,58 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/actions/postsActions";
 import { FaUserCircle } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 
-// 🔵⚪🔵 Letras animadas estilo bandera argentina (pero legibles)
-const AnimatedLetters = ({ text }) => {
-  return (
-    <span className="inline-block">
-      {text.split("").map((char, index) => (
-        <motion.span
-          key={index}
-          className="inline-block font-extrabold"
-          style={{
-            background: "linear-gradient(90deg, #00bfff, #ffffff, #00bfff)",
-            backgroundSize: "200% auto",
-            WebkitBackgroundClip: "text",
-            color: "transparent",
-          }}
-          animate={{
-            y: [0, -4, 0],
-            backgroundPosition: ["0% center", "200% center"],
-          }}
-          transition={{
-            y: {
-              repeat: Infinity,
-              duration: 1.6,
-              ease: "easeInOut",
-              delay: index * 0.08,
-            },
-            backgroundPosition: {
-              repeat: Infinity,
-              duration: 2.5,
-              ease: "linear",
-              delay: index * 0.05,
-            },
-          }}
-        >
-          {char}
-        </motion.span>
-      ))}
-    </span>
-  );
-};
+// 🇦🇷 Letras animadas estilo bandera argentina
+const AnimatedLetters = ({ text }) => (
+  <span className="inline-block">
+    {text.split("").map((char, index) => (
+      <motion.span
+        key={index}
+        className="inline-block font-extrabold"
+        style={{
+          background: "linear-gradient(90deg, #00bfff, #ffffff, #00bfff)",
+          backgroundSize: "200% auto",
+          WebkitBackgroundClip: "text",
+          color: "transparent",
+        }}
+        animate={{
+          y: [0, -4, 0],
+          backgroundPosition: ["0% center", "200% center"],
+        }}
+        transition={{
+          y: {
+            repeat: Infinity,
+            duration: 1.6,
+            ease: "easeInOut",
+            delay: index * 0.08,
+          },
+          backgroundPosition: {
+            repeat: Infinity,
+            duration: 2.5,
+            ease: "linear",
+            delay: index * 0.05,
+          },
+        }}
+      >
+        {char}
+      </motion.span>
+    ))}
+  </span>
+);
 
 function Navbar() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.posts.user);
   const [usdBlue, setUsdBlue] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
+    setIsMenuOpen(false);
   };
 
-  // 💰 Traer precio del dólar blue al montar
   useEffect(() => {
     const fetchDolar = async () => {
       try {
@@ -75,32 +74,18 @@ function Navbar() {
         backgroundColor: "rgba(18, 51, 95, 0.6)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
         backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
       }}
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
+          {/* 🇦🇷 Título */}
+          <Link to="/home" className="flex-shrink-0 select-none">
+            <h1 className="text-2xl font-extrabold tracking-wide">
+              <AnimatedLetters text="Palabra Argentina" />
+            </h1>
+          </Link>
 
-          {/* 🇦🇷 Título animado */}
-          <div className="flex-shrink-0 select-none">
-            <Link to="/home">
-              <h1 className="text-2xl font-extrabold tracking-wide">
-                <AnimatedLetters text="Palabra Argentina" />
-              </h1>
-            </Link>
-          </div>
-
-          {/* 💸 Precio del dólar blue */}
-          {/* {usdBlue && (
-            <div className="hidden sm:flex flex-col text-sm text-gray-200">
-              <span>
-                💵 <b>Dólar Blue:</b> Compra ${usdBlue.value_buy} | Venta $
-                {usdBlue.value_sell}
-              </span>
-            </div>
-          )} */}
-
-          {/* 🔗 Links de navegación */}
+          {/* Links en escritorio */}
           <div className="hidden md:flex space-x-6 items-center">
             {!user ? (
               <Link
@@ -128,7 +113,6 @@ function Navbar() {
                 </button>
               </>
             )}
-
             <Link
               to="/contacto"
               className="hover:text-sky-300 transition-colors font-medium"
@@ -139,13 +123,15 @@ function Navbar() {
 
           {/* ☰ Botón móvil */}
           <div className="md:hidden">
-            <button className="focus:outline-none">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="focus:outline-none"
+            >
               <svg
                 className="h-6 w-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   strokeLinecap="round"
@@ -156,9 +142,56 @@ function Navbar() {
               </svg>
             </button>
           </div>
-
         </div>
       </div>
+
+      {/* 🌙 Menú móvil animado */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden bg-[rgba(18,51,95,0.95)] border-t border-white/20 overflow-hidden"
+          >
+            <div className="flex flex-col px-4 py-3 space-y-3">
+              {!user ? (
+                <Link
+                  to="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="hover:text-red-400 font-medium"
+                >
+                  Acceder
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/Miperfil"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 hover:text-sky-400 font-medium"
+                  >
+                    <FaUserCircle size={20} /> Mi Perfil
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-left hover:text-red-400 font-medium"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+              <Link
+                to="/contacto"
+                onClick={() => setIsMenuOpen(false)}
+                className="hover:text-sky-300 font-medium"
+              >
+                Contáctanos
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

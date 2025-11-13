@@ -94,7 +94,19 @@ const Busqueda = () => {
 
   return (
     <div className="min-h-screen bg-[#12335F] p-4">
-      <h2 className="text-black text-2xl font-bold mb-4">Búsqueda de Noticias</h2>
+      {/* 🔹 Título + botón de regresar */}
+      <div className="flex items-center gap-4 mb-6">
+        <h2 className="text-white text-2xl font-bold">
+          Búsqueda de Noticias
+        </h2>
+
+        <Link
+          to="/home"
+          className="flex items-center gap-2 text-white font-medium hover:text-blue-600 transition"
+        >
+          <span className="text-lg">⬅️</span> Regresar
+        </Link>
+      </div>
 
       {/* Filtros */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -196,8 +208,8 @@ const Busqueda = () => {
                 key={i}
                 onClick={() => setCurrentPage(i + 1)}
                 className={`px-3 py-1 rounded ${currentPage === i + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-black hover:bg-gray-200"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-black hover:bg-gray-200"
                   } transition`}
               >
                 {i + 1}

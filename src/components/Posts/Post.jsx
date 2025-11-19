@@ -11,65 +11,115 @@ function Post() {
   const [post, setPost] = useState(null);
   const [liked, setLiked] = useState(false); // estado de like
   const [likesCount, setLikesCount] = useState(0); // contador de likes
+  const [disliked, setDisliked] = useState(false);
+  const [dislikesCount, setDislikesCount] = useState(0);
   const user = useSelector((state) => state.posts.user);
+  const [viewSent, setViewSent] = useState(false);
   const userId = user?.user_id;
-  // const userId = 1; 
+  
 
-  useEffect(() => {
-    axios
-      .get(`/posts/${id}`)
-      .then((res) => {
-        const data = Array.isArray(res.data) ? res.data[0] : res.data;
-        setPost(data);
-        setLikesCount(data.rating_positive || 0);
-      })
-      .catch((err) => console.error(err));
-  }, [id]);
+ useEffect(() => {
+  if (!userId) return;
 
- const handleLike = async () => {
+  axios.get(`/posts/${id}`).then((res) => {
+    const data = Array.isArray(res.data) ? res.data[0] : res.data;
+
+    setPost(data);
+    setLikesCount(data.rating_positive || 0);
+    setDislikesCount(data.rating_negative || 0);
+
+    const userVote = data.Votes?.find(
+      v => Number(v.user_id) === Number(userId)
+    );
+
+    setLiked(userVote?.vote_type === "positive");
+    setDisliked(userVote?.vote_type === "negative");
+  });
+}, [id, userId]);
+
+useEffect(() => {
+  if (!post || !userId || viewSent) return;
+
+  axios
+    .post("http://localhost:3001/ratings/view", {
+      post_id: post.post_id,
+      user_id: userId,
+    })
+    .then((res) => {
+      const updated = Array.isArray(res.data) ? res.data[0] : res.data;
+
+      setPost((prev) => ({
+        ...prev,
+        views: updated.views,
+      }));
+
+      setViewSent(true); // ⬅️ evita que vuelva a correr
+    })
+    .catch((err) => console.error("Error al sumar view:", err));
+}, [post, userId, viewSent]);
+
+
+const updateFromBackend = (updatedPost) => {
+  setPost(prev => ({
+    ...prev,
+    rating_positive: updatedPost.rating_positive,
+    rating_negative: updatedPost.rating_negative,
+    Votes: updatedPost.Votes || prev.Votes
+  }));
+
+  setLikesCount(updatedPost.rating_positive || 0);
+  setDislikesCount(updatedPost.rating_negative || 0);
+
+  const userVote = updatedPost.Votes?.find(
+    v => Number(v.user_id) === Number(userId)
+  ) || null;
+
+  setLiked(userVote?.vote_type === "positive");
+  setDisliked(userVote?.vote_type === "negative");
+  console.log("updatedPost recibido:", updatedPost);
+};
+
+const handleLike = async () => {
+  if (!post || !userId) return;
+
   try {
-    if (!post) return;
-
-    if (!userId) {
-      Swal.fire({
-        icon: "info",
-        title: "Inicia sesión",
-        text: "Debes estar logueado para dar 'Me gusta' 👍",
-        confirmButtonColor: "#3085d6",
-        confirmButtonText: "Ok",
-      });
-      return;
-    }
-
-    // toggle estado local
-    setLiked((prev) => !prev);
-
-    // actualizar contador localmente
-    setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
-
-    // enviar al backend
-    await axios.post("/ratings/vote", {
-      post_id: Number(post.post_id),
-      user_id: Number(userId),
+    const res = await axios.post("/ratings/vote", {
+      post_id: post.post_id,
+      user_id: userId,
       vote_type: "positive",
     });
+
+    updateFromBackend(res.data.post);
+ 
   } catch (err) {
     console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: "Ocurrió un error al registrar tu voto ❌",
-    });
   }
 };
 
-  if (!post) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-black">
-        Cargando noticia...
-      </div>
-    );
+
+const handleDislike = async () => {
+  if (!post || !userId) return;
+
+  try {
+    const res = await axios.post("/ratings/vote", {
+      post_id: post.post_id,
+      user_id: userId,
+      vote_type: "negative",
+    });
+
+    updateFromBackend(res.data.post);
+  } catch (err) {
+    console.error(err);
   }
+};
+if (!post) {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-black">
+      Cargando noticia...
+    </div>
+  );
+}
+
 
   return (
     <div className="min-h-screen bg-[#12335F]">
@@ -105,12 +155,26 @@ function Post() {
         {/* Vistas + Likes */}
         <div className="flex items-center gap-4 text-gray-600 mb-4">
           <p className="text-sm">👁️ {post.views} vistas</p>
-          <button
-            onClick={handleLike}
-            className="flex items-center gap-1 text-sm cursor-pointer hover:text-blue-600 transition"
-          >
-            {liked ? "👎 Ya no me gusta" : "👍 Me gusta"} ({likesCount})
-          </button>
+          {/* Likes y Dislikes */}
+         <div className="flex items-center gap-4 text-gray-600 mb-4">
+
+  {/* Like */}
+  <button
+    onClick={handleLike}
+    className="flex items-center gap-1 text-sm cursor-pointer hover:text-blue-600 transition"
+  >
+    👍 Me gusta ({likesCount})
+  </button>
+
+  {/* Dislike */}
+  <button
+    onClick={handleDislike}
+    className="flex items-center gap-1 text-sm cursor-pointer hover:text-red-600 transition"
+  >
+    👎 No me gusta ({dislikesCount})
+  </button>
+
+</div>
         </div>
 
         {/* Lead */}

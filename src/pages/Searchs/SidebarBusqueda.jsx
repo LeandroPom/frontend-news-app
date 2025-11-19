@@ -50,7 +50,7 @@ const Busqueda = () => {
 
   // Filtrado + orden
   useEffect(() => {
-    let result = posts;
+    let result = [...posts];
 
     if (searchTerm) {
       result = result.filter((p) =>
@@ -67,10 +67,29 @@ const Busqueda = () => {
     }
 
     result = result.sort((a, b) => {
-      const dateA = new Date(a.createdAt);
-      const dateB = new Date(b.createdAt);
-      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-    });
+ switch (sortOrder) {
+  case "newest":
+    return new Date(b.createdAt) - new Date(a.createdAt);
+
+  case "oldest":
+    return new Date(a.createdAt) - new Date(b.createdAt);
+
+  case "rating_high":
+    return (b.rating_positive || 0) - (a.rating_positive || 0);
+
+  case "rating_low":
+    return (a.rating_positive || 0) - (b.rating_positive || 0);
+
+  case "views_high":
+    return (b.views || 0) - (a.views || 0);
+
+  case "views_low":
+    return (a.views || 0) - (b.views || 0);
+
+  default:
+    return 0;
+}
+});
 
     setFilteredPosts(result);
     setCurrentPage(1); // resetear a la primera página cada vez que cambia el filtro
@@ -138,6 +157,11 @@ const Busqueda = () => {
         >
           <option value="newest">Más nuevas</option>
           <option value="oldest">Más antiguas</option>
+          {/* ⭐️ Nuevos filtros que pediste */}
+          <option value="rating_high">Rating más alto</option>
+          <option value="rating_low">Rating más bajo</option>
+          <option value="views_high">Más visitas</option>
+          <option value="views_low">Menos visitas</option>
         </select>
       </div>
 

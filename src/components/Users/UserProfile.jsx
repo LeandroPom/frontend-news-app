@@ -197,7 +197,12 @@ const UserProfile = () => {
                   Mis Publicaciones
                 </button>
               )}
-
+              <button
+                onClick={() => navigate("/mis-favoritos")}
+                className="secondary w-medium font-semibold py-2 rounded-lg hover:bg-yellow-200 hover:text-[#0C2342] transition"
+              >
+                ❤️ Mis Favoritos
+              </button>
               {/* Botón Salir → visible para todos */}
               <button
                 onClick={() => navigate("/home")}

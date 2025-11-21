@@ -17,6 +17,8 @@ import BannerManager from './components/Administration/BannerManager';
 import AdminUserPanel from './components/Administration/AdminUserPanel';
 import AdminPostPanel from './components/Administration/AdminPostPanel';
 import Noticias from './pages/Noticias';
+import FavoritePosts from './pages/FavoritePosts/FavoritePosts';
+import FavoritosList from './pages/FavoritePosts/FavoritePosts';
 
 // import NavBar from './components/NavBar/NavBar';
 
@@ -33,6 +35,7 @@ function App() {
 
       <Routes>
         <Route path='/' element={<Home />} />
+        <Route path='/mis-favoritos' element={<FavoritePosts/>} />
         <Route path='/home' element={<Home />} />
         <Route path='/post/:id' element={<Post />} />
         <Route path='/Login' element={<LoginRegisterBox />} />

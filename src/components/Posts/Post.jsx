@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from "react-redux";
 import Navbar from "../../components/NavBar/NavBar";
 import { Link, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import FavoriteButton from "../../components/FavoriteButton/FavoriteButton";
+
 
 import axios from "axios";
 
@@ -16,109 +18,122 @@ function Post() {
   const user = useSelector((state) => state.posts.user);
   const [viewSent, setViewSent] = useState(false);
   const userId = user?.user_id;
-  
+  const [isFavorite, setIsFavorite] = useState(false);
 
- useEffect(() => {
-  if (!userId) return;
 
-  axios.get(`/posts/${id}`).then((res) => {
-    const data = Array.isArray(res.data) ? res.data[0] : res.data;
+  useEffect(() => {
+    if (!userId) return;
 
-    setPost(data);
-    setLikesCount(data.rating_positive || 0);
-    setDislikesCount(data.rating_negative || 0);
+    axios.get(`/posts/${id}`).then((res) => {
+      const data = Array.isArray(res.data) ? res.data[0] : res.data;
 
-    const userVote = data.Votes?.find(
+      setPost(data);
+      setLikesCount(data.rating_positive || 0);
+      setDislikesCount(data.rating_negative || 0);
+
+      const userVote = data.Votes?.find(
+        v => Number(v.user_id) === Number(userId)
+      );
+
+      setLiked(userVote?.vote_type === "positive");
+      setDisliked(userVote?.vote_type === "negative");
+    });
+  }, [id, userId]);
+
+  useEffect(() => {
+    if (!userId || !id) return;
+
+    axios.get(`/ratings/user/${userId}/favorites`)
+      .then(res => {
+        const favorites = res.data || [];
+        const found = favorites.some(f => Number(f.post_id) === Number(id));
+        setIsFavorite(found);
+      })
+      .catch(err => console.error("Error cargando favoritos:", err));
+  }, [userId, id]);
+
+  useEffect(() => {
+    if (!post || !userId || viewSent) return;
+
+    axios
+      .post("http://localhost:3001/ratings/view", {
+        post_id: post.post_id,
+        user_id: userId,
+      })
+      .then((res) => {
+        const updated = Array.isArray(res.data) ? res.data[0] : res.data;
+
+        setPost((prev) => ({
+          ...prev,
+          views: updated.views,
+        }));
+
+        setViewSent(true); // ⬅️ evita que vuelva a correr
+      })
+      .catch((err) => console.error("Error al sumar view:", err));
+  }, [post, userId, viewSent]);
+
+
+  const updateFromBackend = (updatedPost) => {
+    setPost(prev => ({
+      ...prev,
+      rating_positive: updatedPost.rating_positive,
+      rating_negative: updatedPost.rating_negative,
+      Votes: updatedPost.Votes || prev.Votes
+    }));
+
+    setLikesCount(updatedPost.rating_positive || 0);
+    setDislikesCount(updatedPost.rating_negative || 0);
+
+    const userVote = updatedPost.Votes?.find(
       v => Number(v.user_id) === Number(userId)
-    );
+    ) || null;
 
     setLiked(userVote?.vote_type === "positive");
     setDisliked(userVote?.vote_type === "negative");
-  });
-}, [id, userId]);
+    console.log("updatedPost recibido:", updatedPost);
+  };
 
-useEffect(() => {
-  if (!post || !userId || viewSent) return;
+  const handleLike = async () => {
+    if (!post || !userId) return;
 
-  axios
-    .post("http://localhost:3001/ratings/view", {
-      post_id: post.post_id,
-      user_id: userId,
-    })
-    .then((res) => {
-      const updated = Array.isArray(res.data) ? res.data[0] : res.data;
+    try {
+      const res = await axios.post("/ratings/vote", {
+        post_id: post.post_id,
+        user_id: userId,
+        vote_type: "positive",
+      });
 
-      setPost((prev) => ({
-        ...prev,
-        views: updated.views,
-      }));
+      updateFromBackend(res.data.post);
 
-      setViewSent(true); // ⬅️ evita que vuelva a correr
-    })
-    .catch((err) => console.error("Error al sumar view:", err));
-}, [post, userId, viewSent]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 
-const updateFromBackend = (updatedPost) => {
-  setPost(prev => ({
-    ...prev,
-    rating_positive: updatedPost.rating_positive,
-    rating_negative: updatedPost.rating_negative,
-    Votes: updatedPost.Votes || prev.Votes
-  }));
+  const handleDislike = async () => {
+    if (!post || !userId) return;
 
-  setLikesCount(updatedPost.rating_positive || 0);
-  setDislikesCount(updatedPost.rating_negative || 0);
+    try {
+      const res = await axios.post("/ratings/vote", {
+        post_id: post.post_id,
+        user_id: userId,
+        vote_type: "negative",
+      });
 
-  const userVote = updatedPost.Votes?.find(
-    v => Number(v.user_id) === Number(userId)
-  ) || null;
-
-  setLiked(userVote?.vote_type === "positive");
-  setDisliked(userVote?.vote_type === "negative");
-  console.log("updatedPost recibido:", updatedPost);
-};
-
-const handleLike = async () => {
-  if (!post || !userId) return;
-
-  try {
-    const res = await axios.post("/ratings/vote", {
-      post_id: post.post_id,
-      user_id: userId,
-      vote_type: "positive",
-    });
-
-    updateFromBackend(res.data.post);
- 
-  } catch (err) {
-    console.error(err);
+      updateFromBackend(res.data.post);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-black">
+        Cargando noticia...
+      </div>
+    );
   }
-};
-
-
-const handleDislike = async () => {
-  if (!post || !userId) return;
-
-  try {
-    const res = await axios.post("/ratings/vote", {
-      post_id: post.post_id,
-      user_id: userId,
-      vote_type: "negative",
-    });
-
-    updateFromBackend(res.data.post);
-  } catch (err) {
-    console.error(err);
-  }
-};
-if (!post) {
-  return (
-    <div className="min-h-screen flex items-center justify-center text-black">
-      Cargando noticia...
-    </div>
-  );
-}
 
 
   return (
@@ -135,11 +150,21 @@ if (!post) {
         }}
       >
         {/* Título */}
-        <h1
-          className="text-black text-3xl font-bold mb-2"
-          dangerouslySetInnerHTML={{ __html: post.headLine }}
-        />
+        <div className="flex items-center justify-between mb-2">
+          <h1
+            className="text-black text-3xl font-bold"
+            dangerouslySetInnerHTML={{ __html: post.headLine }}
+          />
 
+          {/* Botón de favorito al lado del título */}
+          {userId && (
+            <FavoriteButton
+              postId={post.post_id}
+              userId={userId}
+              initialFavorite={isFavorite}
+            />
+          )}
+        </div>
         {/* Autor y fecha */}
         <div className="flex items-center justify-between text-black text-sm mb-4">
           <span>✍️ {post.User?.user_name}</span>
@@ -156,25 +181,26 @@ if (!post) {
         <div className="flex items-center gap-4 text-gray-600 mb-4">
           <p className="text-sm">👁️ {post.views} vistas</p>
           {/* Likes y Dislikes */}
-         <div className="flex items-center gap-4 text-gray-600 mb-4">
+          <div className="flex items-center gap-4 text-gray-600 mb-4">
 
-  {/* Like */}
-  <button
-    onClick={handleLike}
-    className="flex items-center gap-1 text-sm cursor-pointer hover:text-blue-600 transition"
-  >
-    👍 Me gusta ({likesCount})
-  </button>
+            {/* Like */}
+            <button
+              onClick={handleLike}
+              className="flex items-center gap-1 text-sm cursor-pointer hover:text-blue-600 transition"
+            >
+              👍 Me gusta ({likesCount})
+            </button>
 
-  {/* Dislike */}
-  <button
-    onClick={handleDislike}
-    className="flex items-center gap-1 text-sm cursor-pointer hover:text-red-600 transition"
-  >
-    👎 No me gusta ({dislikesCount})
-  </button>
+            {/* Dislike */}
+            <button
+              onClick={handleDislike}
+              className="flex items-center gap-1 text-sm cursor-pointer hover:text-red-600 transition"
+            >
+              👎 No me gusta ({dislikesCount})
+            </button>
 
-</div>
+          </div>
+
         </div>
 
         {/* Lead */}

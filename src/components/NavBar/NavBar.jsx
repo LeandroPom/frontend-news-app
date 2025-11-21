@@ -96,6 +96,13 @@ function Navbar() {
               </Link>
             ) : (
               <>
+                 {/* ⭐ Nuevo link a Favoritos */}
+      <Link
+        to="/mis-favoritos"
+        className="hover:text-yellow-300 transition font-medium"
+      >
+        ❤️ Mis Favoritos
+      </Link>
                 <div className="flex items-center space-x-2">
                   <FaUserCircle size={24} />
                   <Link
@@ -166,6 +173,14 @@ function Navbar() {
                 </Link>
               ) : (
                 <>
+                 {/* ⬇️ FALTA ESTE BLOQUE EN TU CÓDIGO */}
+          <Link
+            to="/mis-favoritos"
+            onClick={() => setIsMenuOpen(false)}
+            className="hover:text-yellow-300 font-medium"
+          >
+            ❤️ Mis Favoritos
+          </Link>
                   <Link
                     to="/Miperfil"
                     onClick={() => setIsMenuOpen(false)}

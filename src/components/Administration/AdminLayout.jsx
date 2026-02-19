@@ -70,6 +70,13 @@ const AdminLayout = () => {
             </Link>
           )}
 
+          {/* Panel de Productos → solo admin */}
+          {isAdmin && (
+            <Link to="productpanel" className={linkClasses}>
+              Panel de Productos
+            </Link>
+          )}
+
           {/* Salir */}
           <Link to="/home" className={linkClasses + " mt-6"}>
             Salir

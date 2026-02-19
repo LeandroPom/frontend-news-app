@@ -1,14 +1,14 @@
 // UserProfile.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
 import axios from "axios";
 
 const UserProfile = () => {
   const user = useSelector((state) => state.posts.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     user_name: user?.user_name || "",
@@ -16,8 +16,12 @@ const UserProfile = () => {
     password: "",
     profilePic: user?.profilePic || "",
   });
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  // 👉 Premium data desde el backend (/premiums/all)
+  const [premiumData, setPremiumData] = useState(null);
 
   if (!user) {
     return (
@@ -26,6 +30,56 @@ const UserProfile = () => {
       </div>
     );
   }
+
+  // Traer premium del usuario
+  useEffect(() => {
+    const fetchPremium = async () => {
+      if (!user?.user_id) return;
+
+      try {
+        const res = await fetch("http://localhost:3001/premiums/all");
+        const all = await res.json();
+
+        const userPremium = all.find((p) => p.user_id === user.user_id);
+
+        setPremiumData(userPremium || null);
+      } catch (error) {
+        console.error("Error obteniendo premium:", error);
+      }
+    };
+
+    fetchPremium();
+  }, [user]);
+
+  // Handler para renovar
+  // const handleRenewPremium = async () => {
+  //   try {
+  //     const res = await fetch("http://localhost:3001/premiums/", {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         user_id: user.user_id,
+  //       }),
+  //     });
+
+  //     const data = await res.json();
+
+  //     if (data.message === "Debes esperar a que tu Premium esté por vencer para renovar") {
+  //       alert(data.message);
+  //       return;
+  //     }
+
+  //     if (!data.init_point) {
+  //       alert("Error: backend no devolvió init_point");
+  //       return;
+  //     }
+
+  //     window.location.href = data.init_point;
+  //   } catch (error) {
+  //     console.error("Error renovando premium:", error);
+  //     alert("Error procesando la renovación");
+  //   }
+  // };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,15 +94,14 @@ const UserProfile = () => {
     try {
       const dataToSend = { ...formData };
       if (dataToSend.password.trim() === "") delete dataToSend.password;
-      const response = await axios.put(`/users/${user.user_id}`, dataToSend);
 
+      const response = await axios.put(`/users/${user.user_id}`, dataToSend);
       const data = response.data;
+
       setMessage("Perfil actualizado correctamente ✅");
       setEditMode(false);
 
-      // Actualizar el usuario en el store de Redux
       dispatch({ type: "UPDATE_USER", payload: data });
-
     } catch (err) {
       console.error("Error al actualizar usuario:", err);
       const errorMsg = err.response?.data?.error || err.message;
@@ -119,7 +172,6 @@ const UserProfile = () => {
               </p>
             )}
 
-            {/* Botones principales */}
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="submit"
@@ -149,14 +201,42 @@ const UserProfile = () => {
               <span className="font-semibold">Correo:</span> {user.mail}
             </div>
 
+            {/* 🔥 PREMIUM REAL DESDE BACKEND */}
             <div className="mb-4">
               <span className="font-semibold">Premium:</span>{" "}
-              {user.roles?.premium ? "Activo" : "Inactivo"}
-            </div>
+              {premiumData ? (
+                <div className="flex flex-col mt-1">
+                  <span className="text-green-600 font-bold">Activo ✔</span>
+                  <span className="text-sm text-gray-700">
+                    Vence el: <strong>
+                      {new Date(premiumData.expiration_date).toLocaleString("es-AR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </strong>
 
-            <div className="mb-6">
-              <span className="font-semibold">Editor:</span>{" "}
-              {user.roles?.editor ? "Activo" : "Inactivo"}
+                    <div className="mb-6">
+                      <span className="font-semibold">Editor:</span>{" "}
+                      <span
+                        className={`font-bold ${user.roles?.editor ? "text-green-600" : "text-red-600"
+                          }`}
+                      >
+                        {user.roles?.editor ? "Activo ✔" : "Inactivo ✖"}
+                      </span>
+                    </div>
+
+                  </span>
+                  <button
+                    onClick={() => navigate("/Premium")}
+                    className="mt-2 bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
+                  >
+                    Renovar
+                  </button>
+                </div>
+              ) : (
+                <span className="text-red-600 font-bold">Inactivo ✖</span>
+              )}
             </div>
 
             {user.profilePic && (
@@ -170,7 +250,6 @@ const UserProfile = () => {
             )}
 
             <div className="flex flex-col gap-3">
-              {/* Botón editar perfil (todos pueden verlo) */}
               <button
                 onClick={() => setEditMode(true)}
                 className="primary w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
@@ -178,7 +257,6 @@ const UserProfile = () => {
                 Editar perfil
               </button>
 
-              {/* Botón Panel de Admin → solo visible si es admin */}
               {user.roles?.admin && (
                 <button
                   onClick={() => navigate("/Administration")}
@@ -188,7 +266,6 @@ const UserProfile = () => {
                 </button>
               )}
 
-              {/* Botón Mis Publicaciones → visible si es admin o editor */}
               {(user.roles?.admin || user.roles?.editor) && (
                 <button
                   onClick={() => navigate("/Administration/postpanel")}
@@ -197,30 +274,26 @@ const UserProfile = () => {
                   Mis Publicaciones
                 </button>
               )}
+
               <button
                 onClick={() => navigate("/mis-favoritos")}
                 className="secondary w-medium font-semibold py-2 rounded-lg hover:bg-yellow-200 hover:text-[#0C2342] transition"
               >
                 ❤️ Mis Favoritos
               </button>
-              {/* Botón Salir → visible para todos */}
+
               <button
                 onClick={() => navigate("/home")}
                 className="pagina w-medium font-semibold py-2 rounded-lg hover:bg-[#1B4A8A] hover:text-white transition"
               >
                 Salir
               </button>
-
-
             </div>
-
-
           </>
         )}
       </div>
     </div>
   );
-
 };
 
 export default UserProfile;

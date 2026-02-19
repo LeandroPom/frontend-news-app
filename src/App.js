@@ -19,6 +19,9 @@ import AdminPostPanel from './components/Administration/AdminPostPanel';
 import Noticias from './pages/Noticias';
 import FavoritePosts from './pages/FavoritePosts/FavoritePosts';
 import FavoritosList from './pages/FavoritePosts/FavoritePosts';
+import PremiumBenefits from './pages/Premium/Premiumuser';
+import ProductPanel from './components/Administration/AdminProductPanel';
+import Cart from './pages/Premium/Cart';
 
 // import NavBar from './components/NavBar/NavBar';
 
@@ -45,6 +48,8 @@ function App() {
         <Route path='/banner' element={<BannerManager />} />
         <Route path="/noticias" element={<Noticias />} />
          <Route path='/Miperfil' element={<UserProfile />} />
+         <Route path='/Premium' element={<PremiumBenefits />} />
+         <Route path='/cart' element={<Cart />} />
            {/* Rutas del admin */}
   <Route path='/Administration' element={<AdminLayout />}>
     <Route index element={<AdminPanel />} />   {/* Bienvenida */}
@@ -53,7 +58,9 @@ function App() {
     <Route path='banner' element={<BannerManager />} />
     <Route path='Userpanel' element={<AdminUserPanel />} />
     <Route path='Postpanel' element={<AdminPostPanel />} />
+    <Route path="productpanel" element={<ProductPanel />} />
   </Route>
+
 </Routes>
     </div>
   );

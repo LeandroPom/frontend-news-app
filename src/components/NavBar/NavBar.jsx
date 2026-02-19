@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/actions/postsActions";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaShoppingCart } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 
-// 🇦🇷 Letras animadas estilo bandera argentina
+// 🇦🇷 Letras animadas
 const AnimatedLetters = ({ text }) => (
   <span className="inline-block">
     {text.split("").map((char, index) => (
@@ -47,25 +47,12 @@ const AnimatedLetters = ({ text }) => (
 function Navbar() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.posts.user);
-  const [usdBlue, setUsdBlue] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
     setIsMenuOpen(false);
   };
-
-  useEffect(() => {
-    const fetchDolar = async () => {
-      try {
-        const res = await axios.get("https://api.bluelytics.com.ar/v2/latest");
-        setUsdBlue(res.data.blue);
-      } catch (err) {
-        console.error("Error al obtener el dólar:", err);
-      }
-    };
-    fetchDolar();
-  }, []);
 
   return (
     <nav
@@ -78,14 +65,15 @@ function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* 🇦🇷 Título */}
+          
+          {/* Logo */}
           <Link to="/home" className="flex-shrink-0 select-none">
             <h1 className="text-2xl font-extrabold tracking-wide">
               <AnimatedLetters text="Palabra Argentina" />
             </h1>
           </Link>
 
-          {/* Links en escritorio */}
+          {/* DESKTOP */}
           <div className="hidden md:flex space-x-6 items-center">
             {!user ? (
               <Link
@@ -96,13 +84,29 @@ function Navbar() {
               </Link>
             ) : (
               <>
-                 {/* ⭐ Nuevo link a Favoritos */}
-      <Link
-        to="/mis-favoritos"
-        className="hover:text-yellow-300 transition font-medium"
-      >
-        ❤️ Mis Favoritos
-      </Link>
+                {/* 🛒 CARRITO (ANTES DE PREMIUM) */}
+                <Link
+                  to="/cart"
+                  className="hover:text-sky-300 transition"
+                >
+                  <FaShoppingCart size={22} />
+                </Link>
+
+                {/* PREMIUM */}
+                <Link
+                  to="/Premium"
+                  className="font-bold text-sky-400"
+                >
+                  Premium/Productos
+                </Link>
+
+                <Link
+                  to="/mis-favoritos"
+                  className="hover:text-yellow-300 transition font-medium"
+                >
+                  ❤️ Mis Favoritos
+                </Link>
+
                 <div className="flex items-center space-x-2">
                   <FaUserCircle size={24} />
                   <Link
@@ -112,6 +116,7 @@ function Navbar() {
                     Mi Perfil
                   </Link>
                 </div>
+
                 <button
                   onClick={handleLogout}
                   className="hover:text-red-400 transition-colors font-medium"
@@ -120,6 +125,7 @@ function Navbar() {
                 </button>
               </>
             )}
+
             <Link
               to="/contacto"
               className="hover:text-sky-300 transition-colors font-medium"
@@ -128,7 +134,7 @@ function Navbar() {
             </Link>
           </div>
 
-          {/* ☰ Botón móvil */}
+          {/* MOBILE BUTTON */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -152,14 +158,14 @@ function Navbar() {
         </div>
       </div>
 
-      {/* 🌙 Menú móvil animado */}
+      {/* MOBILE MENU */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.3 }}
             className="md:hidden bg-[rgba(18,51,95,0.95)] border-t border-white/20 overflow-hidden"
           >
             <div className="flex flex-col px-4 py-3 space-y-3">
@@ -173,14 +179,31 @@ function Navbar() {
                 </Link>
               ) : (
                 <>
-                 {/* ⬇️ FALTA ESTE BLOQUE EN TU CÓDIGO */}
-          <Link
-            to="/mis-favoritos"
-            onClick={() => setIsMenuOpen(false)}
-            className="hover:text-yellow-300 font-medium"
-          >
-            ❤️ Mis Favoritos
-          </Link>
+                  {/* 🛒 CARRITO MOBILE */}
+                  <Link
+                    to="/cart"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 hover:text-sky-300 font-medium"
+                  >
+                    <FaShoppingCart size={18} /> Carrito
+                  </Link>
+
+                  <Link
+                    to="/Premium"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="font-bold text-sky-400"
+                  >
+                    Premium/Productos
+                  </Link>
+
+                  <Link
+                    to="/mis-favoritos"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="hover:text-yellow-300 font-medium"
+                  >
+                    ❤️ Mis Favoritos
+                  </Link>
+
                   <Link
                     to="/Miperfil"
                     onClick={() => setIsMenuOpen(false)}
@@ -188,6 +211,7 @@ function Navbar() {
                   >
                     <FaUserCircle size={20} /> Mi Perfil
                   </Link>
+
                   <button
                     onClick={handleLogout}
                     className="text-left hover:text-red-400 font-medium"
@@ -196,6 +220,7 @@ function Navbar() {
                   </button>
                 </>
               )}
+
               <Link
                 to="/contacto"
                 onClick={() => setIsMenuOpen(false)}
